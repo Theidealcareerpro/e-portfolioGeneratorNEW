@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create professional portfolios, CVs, and cover letters for your job search. Free, no sign-in required.">
+  <meta name="robots" content="noindex">
+  <title>ePortfolio Generator - Job Search Toolkit</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <style>
+    body { background-color: #f3f4f6; }
+    .fade-in { animation: fadeIn 1s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .cta-button:hover { transform: translateY(-2px); transition: transform 0.2s; }
+    .error-message { display: none; color: red; text-align: center; }
+    .error .error-message { display: block; }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="root"></div>
+  <div id="error" class="error-message">
+    <p>Error loading the page. Please try refreshing or contact support.</p>
+  </div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const App = () => {
+      const [isFaqOpen, setIsFaqOpen] = useState(false);
+      const [error, setError] = useState(null);
+
+      useEffect(() => {
+        try {
+          // Test React rendering
+          document.getElementById('error').classList.remove('error');
+        } catch (e) {
+          setError(e.message);
+          document.getElementById('error').classList.add('error');
+        }
+      }, []);
+
+      if (error) {
+        return null; // Error message shown via CSS
+      }
+
+      const toggleFaq = () => setIsFaqOpen(!isFaqOpen);
+
+      return (
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Header */}
+          <header className="text-center mb-12 fade-in">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
+              ePortfolio Generator
+            </h1>
+            <p className="text-lg md:text-xl text-gray-600 mb-6">
+              Build your job search toolkit in minutes. Free, no sign-in required.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <a
+                href="/portfolio"
+                className="cta-button bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Create a professional portfolio"
+              >
+                Create Portfolio
+              </a>
+              <a
+                href="/cv"
+                className="cta-button bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                aria-label="Create an ATS-friendly CV"
+              >
+                Create CV
+              </a>
+              <a
+                href="/coverletter"
+                className="cta-button bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                aria-label="Create a tailored cover letter"
+              >
+                Create Cover Letter
+              </a>
+            </div>
+          </header>
+
+          {/* Features Section */}
+          <section className="mb-12 fade-in">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+              Why Choose ePortfolio Generator?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Professional Portfolios</h3>
+                <p className="text-gray-600">
+                  Create recruiter-friendly portfolios with customizable templates, hosted free on GitHub Pages.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">ATS-Friendly CVs</h3>
+                <p className="text-gray-600">
+                  Generate text-based CVs optimized for applicant tracking systems to boost job application success.
+                </p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">Tailored Cover Letters</h3>
+                <p className="text-gray-600">
+                  Craft polished cover letters tailored to your job applications, downloadable as PDFs.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ Section */}
+          <section className="mb-12 fade-in">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+              Frequently Asked Questions
+            </h2>
+            <button
+              onClick={toggleFaq}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-expanded={isFaqOpen}
+              aria-controls="faq-content"
+            >
+              {isFaqOpen ? 'Hide FAQ' : 'Show FAQ'}
+            </button>
+            {isFaqOpen && (
+              <div id="faq-content" className="bg-white p-6 rounded-lg shadow-md">
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    How long do my portfolio, CV, and cover letter last?
+                  </h3>
+                  <p className="text-gray-600">
+                    All outputs expire after 30 days for privacy. You’ll get an email reminder 3 days before expiry.
+                  </p>
+                </div>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Are my portfolio and CV ATS-friendly?
+                  </h3>
+                  <p className="text-gray-600">
+                    Yes, CVs are text-based with minimal formatting to maximize compatibility with applicant tracking systems. Use job description keywords for best results.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    How do I share my portfolio?
+                  </h3>
+                  <p className="text-gray-600">
+                    Use the unique URL, QR code, or LinkedIn sharing button provided after creation.
+                  </p>
+                </div>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Is my data private?
+                  </h3>
+                  <p className="text-gray-600">
+                    Yes, we only track anonymous view counts to show your portfolio’s reach. No personal data is stored after expiry.
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Feedback Form */}
+          <section className="mb-12 fade-in">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+              We Value Your Feedback
+            </h2>
+            <form name="feedback" method="POST" data-netlify="true" className="max-w-md mx-auto">
+              <input type="hidden" name="form-name" value="feedback" />
+              <div className="mb-4">
+                <label htmlFor="message" className="block text-gray-600 mb-2">
+                  Your Feedback
+                </label>
+                <textarea
+                  id="message"
+                  name="message"
+                  rows="4"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Tell us how we can improve!"
+                  required
+                  aria-required="true"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Submit feedback"
+              >
+                Submit
+              </button>
+            </form>
+          </section>
+
+          {/* Footer */}
+          <footer className="bg-gray-800 text-white text-center py-6 fade-in">
+            <p className="mb-2">Support this free tool!</p>
+            <a
+              href="https://buymeacoffee.com/eportfoliogen"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              aria-label="Support us on Buy Me a Coffee"
+            >
+              Buy Me a Coffee
+            </a>
+            <p className="mt-4 text-sm">
+              © 2025 ePortfolio Generator. All rights reserved.
+            </p>
+          </footer>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
