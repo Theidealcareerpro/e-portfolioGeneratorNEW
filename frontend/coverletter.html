@@ -27,68 +27,37 @@
   </div>
   <script type="text/babel">
     try {
-      console.log('Loading coverletter.html...');
-      const { useState, useEffect } = React;
+      console.log('Starting coverletter.html load at', new Date().toISOString());
+      console.log('React loaded:', typeof React !== 'undefined');
+      console.log('ReactDOM loaded:', typeof ReactDOM !== 'undefined');
+      console.log('Babel loaded:', typeof Babel !== 'undefined');
+
+      const { useState } = React;
 
       const CoverLetterForm = () => {
-        console.log('Rendering CoverLetterForm component...');
+        console.log('Rendering CoverLetterForm...');
         const [formData, setFormData] = useState({
-          name: '', company: '', jobTitle: '', motivation: '', skills: ''
+          name: '',
+          company: '',
+          jobTitle: '',
+          motivation: '',
+          skills: ''
         });
         const [showPreview, setShowPreview] = useState(true);
-        const [savedMessage, setSavedMessage] = useState('');
-
-        useEffect(() => {
-          console.log('Running useEffect for loading saved data...');
-          try {
-            const savedPortfolio = localStorage.getItem('portfolioForm');
-            const savedCV = localStorage.getItem('cvForm');
-            const savedCL = localStorage.getItem('coverLetterForm');
-            if (savedCL) {
-              console.log('Loading coverLetterForm from localStorage');
-              setFormData(JSON.parse(savedCL));
-            } else if (savedPortfolio) {
-              console.log('Loading portfolioForm from localStorage');
-              const portfolio = JSON.parse(savedPortfolio);
-              setFormData(prev => ({
-                ...prev,
-                name: portfolio.name || '',
-                skills: portfolio.skills || ''
-              }));
-            } else if (savedCV) {
-              console.log('Loading cvForm from localStorage');
-              const cv = JSON.parse(savedCV);
-              setFormData(prev => ({
-                ...prev,
-                name: cv.name || '',
-                skills: cv.skills || ''
-              }));
-            }
-          } catch (e) {
-            console.error('Error in useEffect:', e);
-          }
-        }, []);
 
         const handleChange = (e) => {
-          console.log('Handling input change:', e.target.name, e.target.value);
+          console.log('Input change:', e.target.name, '=', e.target.value);
           const { name, value } = e.target;
           const newValue = name === 'motivation' ? value.slice(0, 200) : value;
-          setFormData(prev => {
-            const newData = { ...prev, [name]: newValue };
-            try {
-              localStorage.setItem('coverLetterForm', JSON.stringify(newData));
-              setSavedMessage('Data saved locally!');
-              setTimeout(() => setSavedMessage(''), 2000);
-            } catch (e) {
-              console.error('Error saving to localStorage:', e);
-            }
-            return newData;
-          });
+          setFormData(prev => ({
+            ...prev,
+            [name]: newValue
+          }));
         };
 
         const handleSubmit = (e) => {
           e.preventDefault();
-          console.log('Form submitted with data:', formData);
+          console.log('Form submitted:', formData);
           alert('Cover letter form submitted! Backend integration pending.');
         };
 
@@ -100,52 +69,97 @@
               <form onSubmit={handleSubmit} className="md:w-1/2">
                 <div className="mb-4">
                   <label htmlFor="name" className="block text-gray-600 mb-2">Full Name *</label>
-                  <input type="text" id="name" name="name" value={formData.name} onChange={handleChange}
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required aria-required="true" placeholder="John Doe" />
+                    required
+                    aria-required="true"
+                    placeholder="John Doe"
+                  />
                 </div>
                 <div className="mb-4">
                   <label htmlFor="company" className="block text-gray-600 mb-2">Company Name *</label>
-                  <input type="text" id="company" name="company" value={formData.company} onChange={handleChange}
+                  <input
+                    type="text"
+                    id="company"
+                    name="company"
+                    value={formData.company}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required aria-required="true" placeholder="Acme Corp" />
+                    required
+                    aria-required="true"
+                    placeholder="Acme Corp"
+                  />
                 </div>
                 <div className="mb-4">
                   <label htmlFor="jobTitle" className="block text-gray-600 mb-2">Job Title *</label>
-                  <input type="text" id="jobTitle" name="jobTitle" value={formData.jobTitle} onChange={handleChange}
+                  <input
+                    type="text"
+                    id="jobTitle"
+                    name="jobTitle"
+                    value={formData.jobTitle}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required aria-required="true" placeholder="Software Engineer" />
+                    required
+                    aria-required="true"
+                    placeholder="Software Engineer"
+                  />
                 </div>
                 <div className="mb-4">
                   <label htmlFor="motivation" className="block text-gray-600 mb-2">Motivation (max 200 characters) *</label>
-                  <textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange}
+                  <textarea
+                    id="motivation"
+                    name="motivation"
+                    value={formData.motivation}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="4" required aria-required="true" placeholder="Why you’re excited about this role" />
+                    rows="4"
+                    required
+                    aria-required="true"
+                    placeholder="Why you’re excited about this role"
+                  />
                   <p className="text-gray-600 text-sm">{formData.motivation.length}/200 characters</p>
                 </div>
                 <div className="mb-4">
                   <label htmlFor="skills" className="block text-gray-600 mb-2">Skills (comma-separated)</label>
-                  <input type="text" id="skills" name="skills" value={formData.skills} onChange={handleChange}
+                  <input
+                    type="text"
+                    id="skills"
+                    name="skills"
+                    value={formData.skills}
+                    onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="JavaScript, React, Python" />
+                    placeholder="JavaScript, React, Python"
+                  />
                 </div>
-                <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  aria-label="Create cover letter">
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Create cover letter"
+                >
                   Create Cover Letter
                 </button>
-                <button type="button" onClick={() => { 
-                  localStorage.removeItem('coverLetterForm'); 
-                  setFormData({}); 
-                  setSavedMessage('Form cleared!'); 
-                  setTimeout(() => setSavedMessage(''), 2000); 
-                }} className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                  aria-label="Clear form">
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log('Clearing form...');
+                    setFormData({ name: '', company: '', jobTitle: '', motivation: '', skills: '' });
+                  }}
+                  className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  aria-label="Clear form"
+                >
                   Clear Form
                 </button>
-                {savedMessage && <p className="text-green-600 mt-2">{savedMessage}</p>}
               </form>
               <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
-                <button onClick={() => setShowPreview(!showPreview)} className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden">
+                <button
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden"
+                >
                   {showPreview ? 'Hide Preview' : 'Show Preview'}
                 </button>
                 <div className="bg-white p-6 rounded-lg shadow-md font-sans text-sm">
@@ -170,7 +184,7 @@
       console.log('Rendering CoverLetterForm...');
       root.render(<CoverLetterForm />);
     } catch (error) {
-      console.error('Error rendering coverletter.html:', error);
+      console.error('Error rendering coverletter.html:', error.message, error.stack);
       document.getElementById('error').classList.add('error');
     }
   </script>
