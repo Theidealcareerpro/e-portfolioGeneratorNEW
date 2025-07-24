@@ -1,148 +1,158 @@
 <!DOCTYPE html>
-     <html lang="en">
-     <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <meta name="description" content="Create a tailored cover letter for your job search.">
-       <meta name="robots" content="noindex">
-       <title>Create Cover Letter - ePortfolio Generator</title>
-       <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-       <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-       <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-       <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
-       <style>
-         body { background-color: #f3f4f6; }
-         .fade-in { animation: fadeIn 1s ease-in; }
-         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-         .preview-toggle { display: none; }
-         @media (max-width: 640px) { .preview-toggle { display: block; } .preview-hidden { display: none; } }
-       </style>
-     </head>
-     <body class="antialiased">
-       <div id="root"></div>
-       <script type="text/babel">
-         const { useState, useEffect } = React;
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create a tailored cover letter for your job search.">
+  <meta name="robots" content="noindex">
+  <title>Create Cover Letter - ePortfolio Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <style>
+    body { background-color: #f3f4f6; }
+    .fade-in { animation: fadeIn 1s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .preview-toggle { display: none; }
+    @media (max-width: 640px) { .preview-toggle { display: block; } .preview-hidden { display: none; } }
+    .error-message { display: none; color: red; text-align: center; padding: 1rem; }
+    .error .error-message { display: block; }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="root"></div>
+  <div id="error" class="error-message">
+    <p>Error loading the page. Please try refreshing or ensure you're viewing via a web server (e.g., Netlify).</p>
+  </div>
+  <script type="text/babel">
+    try {
+      const { useState, useEffect } = React;
 
-         const CoverLetterForm = () => {
-           const [formData, setFormData] = useState({
-             name: '', company: '', jobTitle: '', motivation: '', skills: ''
-           });
-           const [showPreview, setShowPreview] = useState(true);
-           const [savedMessage, setSavedMessage] = useState('');
+      const CoverLetterForm = () => {
+        const [formData, setFormData] = useState({
+          name: '', company: '', jobTitle: '', motivation: '', skills: ''
+        });
+        const [showPreview, setShowPreview] = useState(true);
+        const [savedMessage, setSavedMessage] = useState('');
 
-           useEffect(() => {
-             // Load saved portfolio or CV data
-             const savedPortfolio = localStorage.getItem('portfolioForm');
-             const savedCV = localStorage.getItem('cvForm');
-             const savedCL = localStorage.getItem('coverLetterForm');
-             if (savedCL) {
-               setFormData(JSON.parse(savedCL));
-             } else if (savedPortfolio) {
-               const portfolio = JSON.parse(savedPortfolio);
-               setFormData(prev => ({
-                 ...prev,
-                 name: portfolio.name || '',
-                 skills: portfolio.skills || ''
-               }));
-             } else if (savedCV) {
-               const cv = JSON.parse(savedCV);
-               setFormData(prev => ({
-                 ...prev,
-                 name: cv.name || '',
-                 skills: cv.skills || ''
-               }));
-             }
-           }, []);
+        useEffect(() => {
+          // Load saved portfolio or CV data
+          const savedPortfolio = localStorage.getItem('portfolioForm');
+          const savedCV = localStorage.getItem('cvForm');
+          const savedCL = localStorage.getItem('coverLetterForm');
+          if (savedCL) {
+            setFormData(JSON.parse(savedCL));
+          } else if (savedPortfolio) {
+            const portfolio = JSON.parse(savedPortfolio);
+            setFormData(prev => ({
+              ...prev,
+              name: portfolio.name || '',
+              skills: portfolio.skills || ''
+            }));
+          } else if (savedCV) {
+            const cv = JSON.parse(savedCV);
+            setFormData(prev => ({
+              ...prev,
+              name: cv.name || '',
+              skills: cv.skills || ''
+            }));
+          }
+        }, []);
 
-           const handleChange = (e) => {
-             const { name, value } = e.target;
-             const newValue = name === 'motivation' ? value.slice(0, 200) : value;
-             setFormData(prev => {
-               const newData = { ...prev, [name]: newValue };
-               localStorage.setItem('coverLetterForm', JSON.stringify(newData));
-               setSavedMessage('Data saved locally!');
-               setTimeout(() => setSavedMessage(''), 2000);
-               return newData;
-             });
-           };
+        const handleChange = (e) => {
+          const { name, value } = e.target;
+          const newValue = name === 'motivation' ? value.slice(0, 200) : value;
+          setFormData(prev => {
+            const newData = { ...prev, [name]: newValue };
+            localStorage.setItem('coverLetterForm', JSON.stringify(newData));
+            setSavedMessage('Data saved locally!');
+            setTimeout(() => setSavedMessage(''), 2000);
+            return newData;
+          });
+        };
 
-           const handleSubmit = (e) => {
-             e.preventDefault();
-             // Placeholder: Will POST to /api/generate?type=coverletter
-             alert('Cover letter form submitted! Backend integration pending.');
-           };
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          // Placeholder: Will POST to /api/generate?type=coverletter
+          alert('Cover letter form submitted! Backend integration pending.');
+        };
 
-           return (
-             <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
-               <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
-               <h1 className="text-3xl font-bold text-gray-800 mb-6">Create Your Cover Letter</h1>
-               <div className="flex flex-col md:flex-row gap-8">
-                 <form onSubmit={handleSubmit} className="md:w-1/2">
-                   <div className="mb-4">
-                     <label htmlFor="name" className="block text-gray-600 mb-2">Full Name *</label>
-                     <input type="text" id="name" name="name" value={formData.name} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="John Doe" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="company" className="block text-gray-600 mb-2">Company Name *</label>
-                     <input type="text" id="company" name="company" value={formData.company} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="Acme Corp" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="jobTitle" className="block text-gray-600 mb-2">Job Title *</label>
-                     <input type="text" id="jobTitle" name="jobTitle" value={formData.jobTitle} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="Software Engineer" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="motivation" className="block text-gray-600 mb-2">Motivation (max 200 words) *</label>
-                     <textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows="4" required aria-required="true" placeholder="Why you’re excited about this role" />
-                     <p className="text-gray-600 text-sm">{formData.motivation.length}/200 characters</p>
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="skills" className="block text-gray-600 mb-2">Skills (comma-separated)</label>
-                     <input type="text" id="skills" name="skills" value={formData.skills} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="JavaScript, React, Python" />
-                   </div>
-                   <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                     aria-label="Create cover letter">
-                     Create Cover Letter
-                   </button>
-                   <button type="button" onClick={() => { localStorage.removeItem('coverLetterForm'); setFormData({}); setSavedMessage('Form cleared!'); setTimeout(() => setSavedMessage(''), 2000); }}
-                     className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                     aria-label="Clear form">
-                     Clear Form
-                   </button>
-                   {savedMessage && <p className="text-green-600 mt-2">{savedMessage}</p>}
-                 </form>
-                 <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
-                   <button onClick={() => setShowPreview(!showPreview)} className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden">
-                     {showPreview ? 'Hide Preview' : 'Show Preview'}
-                   </button>
-                   <div className="bg-white p-6 rounded-lg shadow-md font-sans text-sm">
-                     <p className="mb-2">{new Date().toLocaleDateString()}</p>
-                     <p className="mb-2">{formData.company || 'Company Name'}</p>
-                     <p className="mb-4">Dear Hiring Manager,</p>
-                     <p className="mb-4">I am excited to apply for the {formData.jobTitle || 'Position'} position at {formData.company || 'Company'}. {formData.motivation || 'Your motivation'}</p>
-                     <p className="mb-2">My key skills include:</p>
-                     <ul className="list-disc pl-6 mb-4">
-                       {formData.skills ? formData.skills.split(',').map(skill => <li key={skill}>{skill.trim() || 'Skill'}</li>) : <li>No skills</li>}
-                     </ul>
-                     <p className="mb-4">Sincerely,<br>{formData.name || 'Your Name'}</p>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           );
-         };
+        return (
+          <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
+            <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">Create Your Cover Letter</h1>
+            <div className="flex flex-col md:flex-row gap-8">
+              <form onSubmit={handleSubmit} className="md:w-1/2">
+                <div className="mb-4">
+                  <label htmlFor="name" className="block text-gray-600 mb-2">Full Name *</label>
+                  <input type="text" id="name" name="name" value={formData.name} onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required aria-required="true" placeholder="John Doe" />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="company" className="block text-gray-600 mb-2">Company Name *</label>
+                  <input type="text" id="company" name="company" value={formData.company} onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required aria-required="true" placeholder="Acme Corp" />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="jobTitle" className="block text-gray-600 mb-2">Job Title *</label>
+                  <input type="text" id="jobTitle" name="jobTitle" value={formData.jobTitle} onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required aria-required="true" placeholder="Software Engineer" />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="motivation" className="block text-gray-600 mb-2">Motivation (max 200 characters) *</label>
+                  <textarea id="motivation" name="motivation" value={formData.motivation} onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    rows="4" required aria-required="true" placeholder="Why you’re excited about this role" />
+                  <p className="text-gray-600 text-sm">{formData.motivation.length}/200 characters</p>
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="skills" className="block text-gray-600 mb-2">Skills (comma-separated)</label>
+                  <input type="text" id="skills" name="skills" value={formData.skills} onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="JavaScript, React, Python" />
+                </div>
+                <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Create cover letter">
+                  Create Cover Letter
+                </button>
+                <button type="button" onClick={() => { localStorage.removeItem('coverLetterForm'); setFormData({}); setSavedMessage('Form cleared!'); setTimeout(() => setSavedMessage(''), 2000); }}
+                  className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  aria-label="Clear form">
+                  Clear Form
+                </button>
+                {savedMessage && <p className="text-green-600 mt-2">{savedMessage}</p>}
+              </form>
+              <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
+                <button onClick={() => setShowPreview(!showPreview)} className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden">
+                  {showPreview ? 'Hide Preview' : 'Show Preview'}
+                </button>
+                <div className="bg-white p-6 rounded-lg shadow-md font-sans text-sm">
+                  <p className="mb-2">{new Date().toLocaleDateString()}</p>
+                  <p className="mb-2">{formData.company || 'Company Name'}</p>
+                  <p className="mb-4">Dear Hiring Manager,</p>
+                  <p className="mb-4">I am excited to apply for the {formData.jobTitle || 'Position'} position at {formData.company || 'Company'}. {formData.motivation || 'Your motivation'}</p>
+                  <p className="mb-2">My key skills include:</p>
+                  <ul className="list-disc pl-6 mb-4">
+                    {formData.skills ? formData.skills.split(',').map(skill => <li key={skill}>{skill.trim() || 'Skill'}</li>) : <li>No skills</li>}
+                  </ul>
+                  <p className="mb-4">Sincerely,<br>{formData.name || 'Your Name'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      };
 
-         const root = ReactDOM.createRoot(document.getElementById('root'));
-         root.render(<CoverLetterForm />);
-       </script>
-     </body>
-     </html>
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<CoverLetterForm />);
+    } catch (error) {
+      console.error('Error rendering cover letter page:', error);
+      document.getElementById('error').classList.add('error');
+    }
+  </script>
+</body>
+</html>
