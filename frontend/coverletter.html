@@ -23,13 +23,15 @@
 <body class="antialiased">
   <div id="root"></div>
   <div id="error" class="error-message">
-    <p>Error loading the page. Please try refreshing or ensure you're viewing via a web server (e.g., Netlify).</p>
+    <p>Error loading the cover letter page. Please try refreshing or ensure you're viewing via a web server (e.g., Netlify). Check the console (F12) for details.</p>
   </div>
   <script type="text/babel">
     try {
+      console.log('Loading coverletter.html...');
       const { useState, useEffect } = React;
 
       const CoverLetterForm = () => {
+        console.log('Rendering CoverLetterForm component...');
         const [formData, setFormData] = useState({
           name: '', company: '', jobTitle: '', motivation: '', skills: ''
         });
@@ -37,44 +39,56 @@
         const [savedMessage, setSavedMessage] = useState('');
 
         useEffect(() => {
-          // Load saved portfolio or CV data
-          const savedPortfolio = localStorage.getItem('portfolioForm');
-          const savedCV = localStorage.getItem('cvForm');
-          const savedCL = localStorage.getItem('coverLetterForm');
-          if (savedCL) {
-            setFormData(JSON.parse(savedCL));
-          } else if (savedPortfolio) {
-            const portfolio = JSON.parse(savedPortfolio);
-            setFormData(prev => ({
-              ...prev,
-              name: portfolio.name || '',
-              skills: portfolio.skills || ''
-            }));
-          } else if (savedCV) {
-            const cv = JSON.parse(savedCV);
-            setFormData(prev => ({
-              ...prev,
-              name: cv.name || '',
-              skills: cv.skills || ''
-            }));
+          console.log('Running useEffect for loading saved data...');
+          try {
+            const savedPortfolio = localStorage.getItem('portfolioForm');
+            const savedCV = localStorage.getItem('cvForm');
+            const savedCL = localStorage.getItem('coverLetterForm');
+            if (savedCL) {
+              console.log('Loading coverLetterForm from localStorage');
+              setFormData(JSON.parse(savedCL));
+            } else if (savedPortfolio) {
+              console.log('Loading portfolioForm from localStorage');
+              const portfolio = JSON.parse(savedPortfolio);
+              setFormData(prev => ({
+                ...prev,
+                name: portfolio.name || '',
+                skills: portfolio.skills || ''
+              }));
+            } else if (savedCV) {
+              console.log('Loading cvForm from localStorage');
+              const cv = JSON.parse(savedCV);
+              setFormData(prev => ({
+                ...prev,
+                name: cv.name || '',
+                skills: cv.skills || ''
+              }));
+            }
+          } catch (e) {
+            console.error('Error in useEffect:', e);
           }
         }, []);
 
         const handleChange = (e) => {
+          console.log('Handling input change:', e.target.name, e.target.value);
           const { name, value } = e.target;
           const newValue = name === 'motivation' ? value.slice(0, 200) : value;
           setFormData(prev => {
             const newData = { ...prev, [name]: newValue };
-            localStorage.setItem('coverLetterForm', JSON.stringify(newData));
-            setSavedMessage('Data saved locally!');
-            setTimeout(() => setSavedMessage(''), 2000);
+            try {
+              localStorage.setItem('coverLetterForm', JSON.stringify(newData));
+              setSavedMessage('Data saved locally!');
+              setTimeout(() => setSavedMessage(''), 2000);
+            } catch (e) {
+              console.error('Error saving to localStorage:', e);
+            }
             return newData;
           });
         };
 
         const handleSubmit = (e) => {
           e.preventDefault();
-          // Placeholder: Will POST to /api/generate?type=coverletter
+          console.log('Form submitted with data:', formData);
           alert('Cover letter form submitted! Backend integration pending.');
         };
 
@@ -119,8 +133,12 @@
                   aria-label="Create cover letter">
                   Create Cover Letter
                 </button>
-                <button type="button" onClick={() => { localStorage.removeItem('coverLetterForm'); setFormData({}); setSavedMessage('Form cleared!'); setTimeout(() => setSavedMessage(''), 2000); }}
-                  className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                <button type="button" onClick={() => { 
+                  localStorage.removeItem('coverLetterForm'); 
+                  setFormData({}); 
+                  setSavedMessage('Form cleared!'); 
+                  setTimeout(() => setSavedMessage(''), 2000); 
+                }} className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
                   aria-label="Clear form">
                   Clear Form
                 </button>
@@ -147,10 +165,12 @@
         );
       };
 
+      console.log('Creating React root...');
       const root = ReactDOM.createRoot(document.getElementById('root'));
+      console.log('Rendering CoverLetterForm...');
       root.render(<CoverLetterForm />);
     } catch (error) {
-      console.error('Error rendering cover letter page:', error);
+      console.error('Error rendering coverletter.html:', error);
       document.getElementById('error').classList.add('error');
     }
   </script>
