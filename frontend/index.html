@@ -12,157 +12,221 @@
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
   <style>
-    body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+    body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .cta-button:hover { transform: translateY(-2px); transition: transform 0.2s; }
-    .error-message { display: none; color: red; text-align: center; padding: 1rem; }
+    .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
     .error .error-message { display: block; }
+    .loading { opacity: 0.5; pointer-events: none; }
   </style>
 </head>
 <body class="antialiased">
   <div id="root"></div>
-  <div id="error" class="error-message">
+  <div id="error" className="error-message">
     <p>Error loading the page. Please try refreshing or ensure you're viewing via a web server (e.g., Netlify).</p>
   </div>
   <script type="text/babel">
     try {
-      const { useState, useEffect } = React;
+      const { useState, useEffect, useCallback, useMemo, Suspense, lazy } = React;
+
+      const Header = lazy(() => Promise.resolve({
+        default: () => (
+          <header className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in" role="banner">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+              <h1 className="text-3xl font-poppins font-bold">ePortfolio Generator</h1>
+              <nav className="space-x-6" role="navigation">
+                <a href="#features" className="hover:text-yellow-400 transition">Features</a>
+                <a href="#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
+                <a href="#faq" className="hover:text-yellow-400 transition">FAQ</a>
+                <a href="#feedback" className="bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition">Get Started</a>
+              </nav>
+            </div>
+          </header>
+        )
+      }));
+
+      const Hero = lazy(() => Promise.resolve({
+        default: () => (
+          <section className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-20 fade-in" role="region" aria-labelledby="hero-heading">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <h1 id="hero-heading" className="text-4xl md:text-5xl font-poppins font-bold mb-6">Build Your Professional ePortfolio</h1>
+              <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Create a stunning, personalized portfolio, CV, or cover letter to showcase your skills and land your dream job.</p>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/portfolio.html" className="cta-button bg-yellow-400 text-gray-900 py-3 px-8 rounded-full font-semibold hover:bg-yellow-500 transition" aria-label="Create a professional portfolio">Create Portfolio</a>
+                <a href="/cv.html" className="cta-button bg-gray-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-gray-700 transition" aria-label="Create an ATS-friendly CV">Create CV</a>
+                <a href="/coverletter.html" className="cta-button bg-gray-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-gray-700 transition" aria-label="Create a tailored cover letter">Create Cover Letter</a>
+              </div>
+            </div>
+          </section>
+        )
+      }));
+
+      const Features = lazy(() => Promise.resolve({
+        default: () => (
+          <section id="features" className="py-16 bg-white fade-in" role="region" aria-labelledby="features-heading">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 id="features-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-12 text-center">Why Choose ePortfolio Generator?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  { title: "Customizable Portfolios", desc: "Create recruiter-friendly portfolios with modern templates, hosted free on GitHub Pages." },
+                  { title: "ATS-Friendly CVs", desc: "Generate text-based CVs optimized for applicant tracking systems to boost job application success." },
+                  { title: "Professional Cover Letters", desc: "Craft tailored cover letters downloadable as PDFs to impress hiring managers." }
+                ].map((feature, index) => (
+                  <div key={index} className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg transition">
+                    <h3 className="text-xl font-semibold text-indigo-600 mb-4">{feature.title}</h3>
+                    <p className="text-gray-600">{feature.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      }));
+
+      const HowItWorks = lazy(() => Promise.resolve({
+        default: () => (
+          <section id="how-it-works" className="py-16 bg-gray-100 fade-in" role="region" aria-labelledby="how-it-works-heading">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 id="how-it-works-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-12 text-center">How It Works</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  { step: "1", title: "Fill Out the Form", desc: "Enter your details, skills, and projects in our easy-to-use forms." },
+                  { step: "2", title: "Choose a Template", desc: "Select from professional templates to match your style." },
+                  { step: "3", title: "Share Your Work", desc: "Get a unique URL and QR code to share your portfolio or download your CV/cover letter." }
+                ].map((step, index) => (
+                  <div key={index} className="text-center">
+                    <div className="text-4xl font-bold text-indigo-600 mb-4">{step.step}</div>
+                    <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
+                    <p className="text-gray-600">{step.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      }));
+
+      const Feedback = lazy(() => Promise.resolve({
+        default: ({ handleSubmit, formData, setFormData, errors }) => (
+          <section id="feedback" className="py-16 bg-white fade-in" role="region" aria-labelledby="feedback-heading">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 id="feedback-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">We Value Your Feedback</h2>
+              <form onSubmit={handleSubmit} name="feedback" method="POST" data-netlify="true" action="/feedback-success.html" className="max-w-md mx-auto">
+                <input type="hidden" name="form-name" value="feedback" />
+                <div className="mb-4">
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Your Feedback</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows="4"
+                    className={`w-full rounded-md border ${errors.message ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
+                    placeholder="Tell us how we can improve!"
+                    required
+                    aria-required="true"
+                    value={formData.message}
+                    onChange={(e) => setFormData({ message: e.target.value })}
+                    aria-invalid={!!errors.message}
+                  />
+                  {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
+                </div>
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-500 focus:ring-opacity-50 disabled:bg-gray-400"
+                  aria-label="Submit feedback"
+                  disabled={!!errors.message}
+                >
+                  Submit Feedback
+                </button>
+              </form>
+            </div>
+          </section>
+        )
+      }));
+
+      const Footer = lazy(() => Promise.resolve({
+        default: () => (
+          <footer className="bg-gray-800 text-white py-8 fade-in" role="contentinfo">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <p className="mb-4">Support this free tool!</p>
+              <a
+                href="https://buymeacoffee.com/eportfoliogen"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-yellow-400 text-gray-900 py-3 px-8 rounded-full font-semibold hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                aria-label="Support us on Buy Me a Coffee"
+              >
+                Buy Me a Coffee
+              </a>
+              <p className="mt-4 text-sm">© 2025 ePortfolio Generator. All rights reserved.</p>
+              <nav className="mt-4 space-x-4" aria-label="Footer navigation">
+                <a href="#features" className="hover:text-yellow-400 transition">Features</a>
+                <a href="#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
+                <a href="#faq" className="hover:text-yellow-400 transition">FAQ</a>
+              </nav>
+            </div>
+          </footer>
+        )
+      }));
 
       const App = () => {
-        const [isFaqOpen, setIsFaqOpen] = useState(false);
-        const [error, setError] = useState(null);
+        const [isLoading, setIsLoading] = useState(true);
+        const [formData, setFormData] = useState({ message: '' });
+        const [errors, setErrors] = useState({});
 
-        useEffect(() => {
-          try {
-            document.getElementById('error').classList.remove('error');
-          } catch (e) {
-            setError(e.message);
-            document.getElementById('error').classList.add('error');
+        const debounce = (func, wait) => {
+          let timeout;
+          return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+          };
+        };
+
+        const validateFeedback = useCallback((value) => {
+          if (value.trim().length < 10) {
+            return 'Feedback must be at least 10 characters';
           }
+          return '';
         }, []);
 
-        if (error) return null;
+        const handleSubmit = useCallback((e) => {
+          e.preventDefault();
+          const error = validateFeedback(formData.message);
+          setErrors({ message: error });
+          if (!error) {
+            e.target.submit();
+          }
+        }, [formData.message]);
 
-        const toggleFaq = () => setIsFaqOpen(!isFaqOpen);
+        const handleScroll = useCallback(debounce(() => {
+          const hash = window.location.hash;
+          if (hash) {
+            const element = document.querySelector(hash);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        }, 100), []);
+
+        useEffect(() => {
+          setIsLoading(false);
+          window.addEventListener('hashchange', handleScroll);
+          handleScroll();
+          return () => window.removeEventListener('hashchange', handleScroll);
+        }, [handleScroll]);
 
         return (
-          <div className="min-h-screen bg-gray-50">
-            <header className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                <h1 className="text-3xl font-poppins font-bold">ePortfolio Generator</h1>
-                <nav className="space-x-6">
-                  <a href="#features" className="hover:text-yellow-400 transition">Features</a>
-                  <a href="#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
-                  <a href="#faq" className="hover:text-yellow-400 transition">FAQ</a>
-                  <a href="#feedback" className="bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition">Get Started</a>
-                </nav>
-              </div>
-            </header>
-
-            <section className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-20 fade-in">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h1 className="text-4xl md:text-5xl font-poppins font-bold mb-6">Build Your Professional ePortfolio</h1>
-                <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Create a stunning, personalized portfolio, CV, or cover letter to showcase your skills and land your dream job.</p>
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                  <a href="/portfolio.html" className="cta-button bg-yellow-400 text-gray-900 py-3 px-8 rounded-full font-semibold hover:bg-yellow-500 transition" aria-label="Create a professional portfolio">Create Portfolio</a>
-                  <a href="/cv.html" className="cta-button bg-gray-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-gray-700 transition" aria-label="Create an ATS-friendly CV">Create CV</a>
-                  <a href="/coverletter.html" className="cta-button bg-gray-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-gray-700 transition" aria-label="Create a tailored cover letter">Create Cover Letter</a>
-                </div>
-              </div>
-            </section>
-
-            <section id="features" className="py-16 bg-white fade-in">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl font-poppins font-bold text-gray-800 mb-12 text-center">Why Choose ePortfolio Generator?</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg transition">
-                    <h3 className="text-xl font-semibold text-indigo-600 mb-4">Customizable Portfolios</h3>
-                    <p className="text-gray-600">Create recruiter-friendly portfolios with modern templates, hosted free on GitHub Pages.</p>
-                  </div>
-                  <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg transition">
-                    <h3 className="text-xl font-semibold text-indigo-600 mb-4">ATS-Friendly CVs</h3>
-                    <p className="text-gray-600">Generate text-based CVs optimized for applicant tracking systems to boost job application success.</p>
-                  </div>
-                  <div className="p-6 bg-gray-50 rounded-lg shadow-md hover:shadow-lg transition">
-                    <h3 className="text-xl font-semibold text-indigo-600 mb-4">Professional Cover Letters</h3>
-                    <p className="text-gray-600">Craft tailored cover letters downloadable as PDFs to impress hiring managers.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section id="how-it-works" className="py-16 bg-gray-100 fade-in">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl font-poppins font-bold text-gray-800 mb-12 text-center">How It Works</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-indigo-600 mb-4">1</div>
-                    <h3 className="text-xl font-semibold mb-4">Fill Out the Form</h3>
-                    <p className="text-gray-600">Enter your details, skills, and projects in our easy-to-use forms.</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-indigo-600 mb-4">2</div>
-                    <h3 className="text-xl font-semibold mb-4">Choose a Template</h3>
-                    <p className="text-gray-600">Select from professional templates to match your style.</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-indigo-600 mb-4">3</div>
-                    <h3 className="text-xl font-semibold mb-4">Share Your Work</h3>
-                    <p className="text-gray-600">Get a unique URL and QR code to share your portfolio or download your CV/cover letter.</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section id="feedback" className="py-16 bg-white fade-in">
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 className="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">We Value Your Feedback</h2>
-                <form name="feedback" method="POST" data-netlify="true" action="/feedback-success.html" className="max-w-md mx-auto">
-                  <input type="hidden" name="form-name" value="feedback" />
-                  <div className="mb-4">
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Your Feedback</label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      rows="4"
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-                      placeholder="Tell us how we can improve!"
-                      required
-                      aria-required="true"
-                    ></textarea>
-                  </div>
-                  <button
-                    type="submit"
-                    className="w-full bg-indigo-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-                    aria-label="Submit feedback"
-                  >
-                    Submit Feedback
-                  </button>
-                </form>
-              </div>
-            </section>
-
-            <footer className="bg-gray-800 text-white py-8 fade-in">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <p className="mb-4">Support this free tool!</p>
-                <a
-                  href="https://buymeacoffee.com/eportfoliogen"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block bg-yellow-400 text-gray-900 py-3 px-8 rounded-full font-semibold hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  aria-label="Support us on Buy Me a Coffee"
-                >
-                  Buy Me a Coffee
-                </a>
-                <p className="mt-4 text-sm">© 2025 ePortfolio Generator. All rights reserved.</p>
-                <div className="mt-4 space-x-4">
-                  <a href="#features" className="hover:text-yellow-400 transition">Features</a>
-                  <a href="#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
-                  <a href="#faq" className="hover:text-yellow-400 transition">FAQ</a>
-                </div>
-              </div>
-            </footer>
+          <div className={`min-h-screen bg-gray-50 ${isLoading ? 'loading' : ''}`}>
+            <Suspense fallback={<div className="text-center py-10">Loading...</div>}>
+              <Header />
+              <main>
+                <Hero />
+                <Features />
+                <HowItWorks />
+                <Feedback handleSubmit={handleSubmit} formData={formData} setFormData={setFormData} errors={errors} />
+              </main>
+              <Footer />
+            </Suspense>
           </div>
         );
       };
