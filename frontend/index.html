@@ -15,14 +15,14 @@
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .cta-button:hover { transform: translateY(-2px); transition: transform 0.2s; }
-    .error-message { display: none; color: red; text-align: center; }
+    .error-message { display: none; color: red; text-align: center; padding: 1rem; }
     .error .error-message { display: block; }
   </style>
 </head>
 <body class="antialiased">
   <div id="root"></div>
   <div id="error" class="error-message">
-    <p>Error loading the page. Please try refreshing or contact support.</p>
+    <p>Error loading the page. Please try refreshing or ensure you're viewing via a web server (e.g., Netlify).</p>
   </div>
   <script type="text/babel">
     const { useState, useEffect } = React;
@@ -33,7 +33,6 @@
 
       useEffect(() => {
         try {
-          // Test React rendering
           document.getElementById('error').classList.remove('error');
         } catch (e) {
           setError(e.message);
@@ -41,9 +40,7 @@
         }
       }, []);
 
-      if (error) {
-        return null; // Error message shown via CSS
-      }
+      if (error) return null;
 
       const toggleFaq = () => setIsFaqOpen(!isFaqOpen);
 
@@ -59,21 +56,21 @@
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a
-                href="/portfolio"
+                href="/portfolio.html"
                 className="cta-button bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label="Create a professional portfolio"
               >
                 Create Portfolio
               </a>
               <a
-                href="/cv"
+                href="/cv.html"
                 className="cta-button bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 aria-label="Create an ATS-friendly CV"
               >
                 Create CV
               </a>
               <a
-                href="/coverletter"
+                href="/coverletter.html"
                 className="cta-button bg-gray-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 aria-label="Create a tailored cover letter"
               >
@@ -140,7 +137,7 @@
                     Yes, CVs are text-based with minimal formatting to maximize compatibility with applicant tracking systems. Use job description keywords for best results.
                   </p>
                 </div>
-                <div>
+                <div className="mb-4">
                   <h3 className="text-lg font-semibold text-gray-800">
                     How do I share my portfolio?
                   </h3>
@@ -148,7 +145,7 @@
                     Use the unique URL, QR code, or LinkedIn sharing button provided after creation.
                   </p>
                 </div>
-                <div className="mb-4">
+                <div>
                   <h3 className="text-lg font-semibold text-gray-800">
                     Is my data private?
                   </h3>
