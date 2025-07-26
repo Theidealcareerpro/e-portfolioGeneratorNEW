@@ -34,6 +34,7 @@
   </div>
   <script type="text/babel">
     try {
+      console.log('Loading portfolio.html...');
       const { useState, useCallback, useEffect, useMemo } = React;
 
       const initialFormData = {
@@ -44,43 +45,49 @@
         template: 'default'
       };
 
-      const FormInput = ({ id, name, label, value, onChange, required, placeholder, error, type = 'text' }) => (
-        <div className="mb-4">
-          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-          <input
-            type={type}
-            id={id}
-            name={name}
-            value={value}
-            onChange={onChange}
-            className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
-            required={required}
-            aria-required={required}
-            placeholder={placeholder}
-            aria-invalid={!!error}
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
-      );
+      const FormInput = ({ id, name, label, value, onChange, required, placeholder, error, type = 'text' }) => {
+        console.log(`Rendering FormInput: ${name}`);
+        return (
+          <div className="mb-4">
+            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
+            <input
+              type={type}
+              id={id}
+              name={name}
+              value={value}
+              onChange={onChange}
+              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
+              required={required}
+              aria-required={required}
+              placeholder={placeholder}
+              aria-invalid={!!error}
+            />
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          </div>
+        );
+      };
 
-      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength }) => (
-        <div className="mb-4">
-          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-          <textarea
-            id={id}
-            name={name}
-            value={value}
-            onChange={onChange}
-            className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-            rows="4"
-            required={required}
-            aria-required={required}
-            placeholder={placeholder}
-            maxLength={maxLength}
-          />
-          {maxLength && <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>}
-        </div>
-      );
+      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength }) => {
+        console.log(`Rendering FormTextarea: ${name}`);
+        return (
+          <div className="mb-4">
+            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
+            <textarea
+              id={id}
+              name={name}
+              value={value}
+              onChange={onChange}
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+              rows="4"
+              required={required}
+              aria-required={required}
+              placeholder={placeholder}
+              maxLength={maxLength}
+            />
+            {maxLength && <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>}
+          </div>
+        );
+      };
 
       const FileInput = ({ id, label, accept, onChange, error }) => (
         <div className="mb-4">
@@ -180,7 +187,8 @@
         </div>
       );
 
-      const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile }) => {
+      const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile, cvUrl }) => {
+        console.log('Rendering PortfolioPreview');
         const skillsList = useMemo(() => formData.skills.filter(skill => skill.name), [formData.skills]);
         const projectsList = useMemo(() => formData.projects.filter(project => project.title), [formData.projects]);
 
@@ -212,8 +220,8 @@
               <h3 className="text-xl font-semibold mb-2">Skills</h3>
               <div className="space-y-2 mb-4">
                 {skillsList.length > 0 ? skillsList.map((skill, index) => (
-                  <div key={index}>
-                    <span>{skill.name || 'Skill'}</span>
+                  <div key={`${skill.name}-${index}`}>
+                    <span>{skill.name}</span>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="bg-indigo-600 h-2.5 rounded-full progress-bar"
@@ -226,8 +234,8 @@
               <h3 className="text-xl font-semibold mb-2">Projects</h3>
               <div className="space-y-4 mb-4">
                 {projectsList.length > 0 ? projectsList.map((project, index) => (
-                  <div key={index}>
-                    <h4 className="font-semibold">{project.title || 'Project Title'}</h4>
+                  <div key={`${project.title}-${index}`}>
+                    <h4 className="font-semibold">{project.title}</h4>
                     <p>{project.description || 'Project description'}</p>
                     {project.link && <a href={project.link} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{project.link}</a>}
                     <p className="text-sm">{project.category || 'Category'}</p>
@@ -240,7 +248,7 @@
               <p><a href={formData.linkedin || '#'} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{formData.linkedin || 'LinkedIn'}</a></p>
               {cvFile && (
                 <p className="mt-2">
-                  <a href={URL.createObjectURL(cvFile)} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                  <a href={cvUrl} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                     View Uploaded CV ({cvFile.name})
                   </a>
                 </p>
@@ -255,14 +263,29 @@
         const [imageFile, setImageFile] = useState(null);
         const [imagePreview, setImagePreview] = useState(null);
         const [cvFile, setCvFile] = useState(null);
+        const [cvUrl, setCvUrl] = useState(null);
         const [showPreview, setShowPreview] = useState(true);
         const [message, setMessage] = useState('');
         const [errors, setErrors] = useState({});
 
         useEffect(() => {
-          const saved = localStorage.getItem('portfolioForm');
-          if (saved) setFormData(JSON.parse(saved));
-        }, []);
+          console.log('Running useEffect for localStorage');
+          try {
+            const saved = localStorage.getItem('portfolioForm');
+            if (saved) {
+              console.log('Loading portfolioForm from localStorage');
+              setFormData(JSON.parse(saved));
+            }
+          } catch (e) {
+            console.error('Error parsing localStorage:', e.message);
+          }
+          return () => {
+            if (cvUrl) {
+              console.log('Revoking cvUrl');
+              URL.revokeObjectURL(cvUrl);
+            }
+          };
+        }, [cvUrl]);
 
         const debounce = (func, wait) => {
           let timeout;
@@ -285,43 +308,70 @@
           return '';
         };
 
+        const validateArrays = () => {
+          const errors = {};
+          if (!formData.skills.some(skill => skill.name.trim())) {
+            errors.skills = 'At least one skill is required';
+          }
+          if (!formData.projects.some(project => project.title.trim())) {
+            errors.projects = 'At least one project is required';
+          }
+          return errors;
+        };
+
         const handleChange = useCallback(debounce((e) => {
           const { name, value } = e.target;
+          console.log(`Input change: ${name} = ${value}`);
           setFormData(prev => {
             const newData = { ...prev, [name]: value };
-            localStorage.setItem('portfolioForm', JSON.stringify(newData));
-            setMessage('Data saved locally!');
-            setTimeout(() => setMessage(''), 2000);
+            try {
+              localStorage.setItem('portfolioForm', JSON.stringify(newData));
+              setMessage('Data saved locally!');
+              setTimeout(() => setMessage(''), 2000);
+            } catch (e) {
+              console.error('Error saving to localStorage:', e.message);
+            }
             return newData;
           });
           setErrors(prev => ({ ...prev, [name]: validateInput(name, value) }));
         }, 300), []);
 
         const handleSkillChange = (index, field, value) => {
+          console.log(`Skill change: index=${index}, field=${field}, value=${value}`);
           setFormData(prev => {
             const newSkills = [...prev.skills];
             newSkills[index] = { ...newSkills[index], [field]: value };
             const newData = { ...prev, skills: newSkills };
-            localStorage.setItem('portfolioForm', JSON.stringify(newData));
-            setMessage('Data saved locally!');
-            setTimeout(() => setMessage(''), 2000);
+            try {
+              localStorage.setItem('portfolioForm', JSON.stringify(newData));
+              setMessage('Data saved locally!');
+              setTimeout(() => setMessage(''), 2000);
+            } catch (e) {
+              console.error('Error saving to localStorage:', e.message);
+            }
             return newData;
           });
         };
 
         const handleProjectChange = (index, field, value) => {
+          console.log(`Project change: index=${index}, field=${field}, value=${value}`);
           setFormData(prev => {
             const newProjects = [...prev.projects];
             newProjects[index] = { ...newProjects[index], [field]: value };
             const newData = { ...prev, projects: newProjects };
-            localStorage.setItem('portfolioForm', JSON.stringify(newData));
-            setMessage('Data saved locally!');
-            setTimeout(() => setMessage(''), 2000);
+            try {
+              localStorage.setItem('portfolioForm', JSON.stringify(newData));
+              setMessage('Data saved locally!');
+              setTimeout(() => setMessage(''), 2000);
+            } catch (e) {
+              console.error('Error saving to localStorage:', e.message);
+            }
             return newData;
           });
         };
 
         const addSkill = () => {
+          console.log('Adding new skill');
           setFormData(prev => ({
             ...prev,
             skills: [...prev.skills, { name: '', proficiency: 50 }]
@@ -329,6 +379,7 @@
         };
 
         const removeSkill = (index) => {
+          console.log(`Removing skill at index ${index}`);
           setFormData(prev => ({
             ...prev,
             skills: prev.skills.filter((_, i) => i !== index)
@@ -336,6 +387,7 @@
         };
 
         const addProject = () => {
+          console.log('Adding new project');
           setFormData(prev => ({
             ...prev,
             projects: [...prev.projects, { title: '', description: '', link: '', category: '' }]
@@ -343,6 +395,7 @@
         };
 
         const removeProject = (index) => {
+          console.log(`Removing project at index ${index}`);
           setFormData(prev => ({
             ...prev,
             projects: prev.projects.filter((_, i) => i !== index)
@@ -350,51 +403,71 @@
         };
 
         const handleFileChange = (e, type) => {
+          console.log(`Handling file change: type=${type}`);
           const file = e.target.files[0];
           if (type === 'image' && file) {
             if (!file.type.startsWith('image/') || !['image/jpeg', 'image/png'].includes(file.type)) {
               setMessage('Please upload a valid image file (JPEG/PNG).');
               setTimeout(() => setMessage(''), 2000);
-              return;
+              return false;
             }
             if (file.size > 5 * 1024 * 1024) { // 5MB limit
               setMessage('Image file size must be under 5MB.');
               setTimeout(() => setMessage(''), 2000);
-              return;
+              return false;
             }
             setImageFile(file);
             const reader = new FileReader();
-            reader.onloadend = () => setImagePreview(reader.result);
+            reader.onloadend = () => {
+              console.log('Image file loaded');
+              setImagePreview(reader.result);
+            };
             reader.readAsDataURL(file);
           } else if (type === 'cv' && file) {
             if (file.type !== 'application/pdf') {
               setMessage('Please upload a valid PDF file for CV.');
               setTimeout(() => setMessage(''), 2000);
-              return;
+              return false;
             }
             if (file.size > 10 * 1024 * 1024) { // 10MB limit
               setMessage('CV file size must be under 10MB.');
               setTimeout(() => setMessage(''), 2000);
-              return;
+              return false;
+            }
+            if (cvUrl) {
+              console.log('Revoking previous cvUrl');
+              URL.revokeObjectURL(cvUrl);
             }
             setCvFile(file);
+            setCvUrl(URL.createObjectURL(file));
+            console.log('New CV file set');
           } else {
             if (type === 'image') {
               setImageFile(null);
               setImagePreview(null);
+              console.log('Cleared image file');
             } else {
+              if (cvUrl) {
+                console.log('Revoking cvUrl');
+                URL.revokeObjectURL(cvUrl);
+              }
               setCvFile(null);
+              setCvUrl(null);
+              console.log('Cleared CV file');
             }
           }
+          return true;
         };
 
         const handleSubmit = async (e) => {
           e.preventDefault();
+          console.log('Submitting portfolio:', formData);
           const newErrors = {};
           ['name', 'profession', 'email', 'linkedin'].forEach(key => {
             const error = validateInput(key, formData[key]);
             if (error) newErrors[key] = error;
           });
+          Object.assign(newErrors, validateArrays());
           setErrors(newErrors);
 
           if (Object.keys(newErrors).length === 0) {
@@ -410,27 +483,42 @@
             if (cvFile) data.append('cv', cvFile);
 
             try {
-              // Placeholder for backend integration
-              setMessage('Portfolio submitted! Backend integration pending.');
+              console.log('Portfolio submission successful');
+              alert('Portfolio submitted! Backend integration pending.');
+              setMessage('Portfolio submitted successfully!');
               setTimeout(() => setMessage(''), 2000);
             } catch (error) {
+              console.error('Submission error:', error.message);
               setMessage('Error submitting portfolio. Please try again.');
               setTimeout(() => setMessage(''), 2000);
             }
+          } else {
+            console.log('Submission failed due to validation errors:', newErrors);
           }
         };
 
         const handleClear = () => {
-          localStorage.removeItem('portfolioForm');
-          setFormData(initialFormData);
-          setImageFile(null);
-          setImagePreview(null);
-          setCvFile(null);
-          setErrors({});
-          setMessage('Form cleared!');
-          setTimeout(() => setMessage(''), 2000);
+          console.log('Clearing form');
+          try {
+            localStorage.removeItem('portfolioForm');
+            setFormData(initialFormData);
+            setImageFile(null);
+            setImagePreview(null);
+            if (cvUrl) {
+              console.log('Revoking cvUrl');
+              URL.revokeObjectURL(cvUrl);
+            }
+            setCvFile(null);
+            setCvUrl(null);
+            setErrors({});
+            setMessage('Form cleared!');
+            setTimeout(() => setMessage(''), 2000);
+          } catch (e) {
+            console.error('Error clearing localStorage:', e.message);
+          }
         };
 
+        console.log('Rendering PortfolioForm');
         return (
           <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
             <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
@@ -547,6 +635,7 @@
                         onRemove={removeSkill}
                       />
                     ))}
+                    {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
                     <button
                       type="button"
                       onClick={addSkill}
@@ -567,6 +656,7 @@
                         onRemove={removeProject}
                       />
                     ))}
+                    {errors.projects && <p className="text-red-500 text-sm mt-1">{errors.projects}</p>}
                     <button
                       type="button"
                       onClick={addProject}
@@ -608,7 +698,7 @@
                       Clear Form
                     </button>
                   </div>
-                  {message && <p className={`mt-2 ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
+                  {message && <p className={`mt-2 ${message.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>{message}</p>}
                 </form>
               </div>
               <PortfolioPreview
@@ -617,6 +707,7 @@
                 togglePreview={() => setShowPreview(!showPreview)}
                 imagePreview={imagePreview}
                 cvFile={cvFile}
+                cvUrl={cvUrl}
               />
             </div>
           </div>
@@ -624,9 +715,10 @@
       };
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
+      console.log('Rendering PortfolioForm...');
       root.render(<PortfolioForm />);
     } catch (error) {
-      console.error('Error in portfolio.html:', error.message);
+      console.error('Error in portfolio.html:', error.message, error.stack);
       document.getElementById('error').classList.add('error');
     }
   </script>
