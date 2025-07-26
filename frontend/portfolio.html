@@ -35,7 +35,7 @@
   <script type="text/babel">
     try {
       console.log('Loading portfolio.html...');
-      const { useState, useCallback, useEffect, useMemo } = React;
+      const { useState, useEffect } = React;
 
       const initialFormData = {
         name: '', profession: '', tagline: '', summary: '', about: '',
@@ -54,7 +54,7 @@
               type={type}
               id={id}
               name={name}
-              value={value}
+              value={value || ''}
               onChange={onChange}
               className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
               required={required}
@@ -67,7 +67,7 @@
         );
       };
 
-      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength }) => {
+      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength, error }) => {
         console.log(`Rendering FormTextarea: ${name}`);
         return (
           <div className="mb-4">
@@ -75,16 +75,18 @@
             <textarea
               id={id}
               name={name}
-              value={value}
+              value={value || ''}
               onChange={onChange}
-              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
               rows="4"
               required={required}
               aria-required={required}
               placeholder={placeholder}
               maxLength={maxLength}
+              aria-invalid={!!error}
             />
             {maxLength && <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>}
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
           </div>
         );
       };
@@ -110,7 +112,7 @@
             <input
               type="text"
               id={`skill-${index}`}
-              value={skill.name}
+              value={skill.name || ''}
               onChange={(e) => onChange(index, 'name', e.target.value)}
               className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
               placeholder="e.g., JavaScript"
@@ -121,7 +123,7 @@
             <input
               type="number"
               id={`proficiency-${index}`}
-              value={skill.proficiency}
+              value={skill.proficiency || 50}
               onChange={(e) => onChange(index, 'proficiency', parseInt(e.target.value) || 0)}
               min="0"
               max="100"
@@ -157,7 +159,7 @@
             onChange={(e) => onChange(index, 'description', e.target.value)}
             placeholder="Describe your project"
             maxLength={500}
-            currentLength={project.description.length}
+            currentLength={project.description ? project.description.length : 0}
           />
           <FormInput
             id={`project-link-${index}`}
@@ -189,8 +191,8 @@
 
       const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile, cvUrl }) => {
         console.log('Rendering PortfolioPreview');
-        const skillsList = useMemo(() => formData.skills.filter(skill => skill.name), [formData.skills]);
-        const projectsList = useMemo(() => formData.projects.filter(project => project.title), [formData.projects]);
+        const skillsList = (formData.skills || []).filter(skill => skill.name);
+        const projectsList = (formData.projects || []).filter(project => project.title);
 
         return (
           <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
@@ -220,7 +222,7 @@
               <h3 className="text-xl font-semibold mb-2">Skills</h3>
               <div className="space-y-2 mb-4">
                 {skillsList.length > 0 ? skillsList.map((skill, index) => (
-                  <div key={`${skill.name}-${index}`}>
+                  <div key={`skill-${index}`}>
                     <span>{skill.name}</span>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
@@ -234,7 +236,7 @@
               <h3 className="text-xl font-semibold mb-2">Projects</h3>
               <div className="space-y-4 mb-4">
                 {projectsList.length > 0 ? projectsList.map((project, index) => (
-                  <div key={`${project.title}-${index}`}>
+                  <div key={`project-${index}`}>
                     <h4 className="font-semibold">{project.title}</h4>
                     <p>{project.description || 'Project description'}</p>
                     {project.link && <a href={project.link} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{project.link}</a>}
@@ -246,7 +248,7 @@
               <p>{formData.email || 'email@example.com'}</p>
               <p>{formData.phone || 'Phone'}</p>
               <p><a href={formData.linkedin || '#'} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{formData.linkedin || 'LinkedIn'}</a></p>
-              {cvFile && (
+              {cvFile && cvUrl && (
                 <p className="mt-2">
                   <a href={cvUrl} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
                     View Uploaded CV ({cvFile.name})
@@ -274,7 +276,13 @@
             const saved = localStorage.getItem('portfolioForm');
             if (saved) {
               console.log('Loading portfolioForm from localStorage');
-              setFormData(JSON.parse(saved));
+              const parsed = JSON.parse(saved);
+              setFormData({
+                ...initialFormData,
+                ...parsed,
+                skills: parsed.skills || initialFormData.skills,
+                projects: parsed.projects || initialFormData.projects
+              });
             }
           } catch (e) {
             console.error('Error parsing localStorage:', e.message);
@@ -287,19 +295,11 @@
           };
         }, [cvUrl]);
 
-        const debounce = (func, wait) => {
-          let timeout;
-          return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-          };
-        };
-
         const validateInput = (name, value) => {
-          if (['name', 'profession', 'email'].includes(name) && value.trim().length < 2) {
+          if (['name', 'profession', 'email'].includes(name) && (!value || value.trim().length < 2)) {
             return `${name.charAt(0).toUpperCase() + name.slice(1)} must be at least 2 characters`;
           }
-          if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          if (name === 'email' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
             return 'Please enter a valid email address';
           }
           if (name === 'linkedin' && value && !/^https?:\/\/(www\.)?linkedin\.com\/in\/.+$/.test(value)) {
@@ -310,16 +310,16 @@
 
         const validateArrays = () => {
           const errors = {};
-          if (!formData.skills.some(skill => skill.name.trim())) {
+          if (!(formData.skills || []).some(skill => skill.name && skill.name.trim())) {
             errors.skills = 'At least one skill is required';
           }
-          if (!formData.projects.some(project => project.title.trim())) {
+          if (!(formData.projects || []).some(project => project.title && project.title.trim())) {
             errors.projects = 'At least one project is required';
           }
           return errors;
         };
 
-        const handleChange = useCallback(debounce((e) => {
+        const handleChange = (e) => {
           const { name, value } = e.target;
           console.log(`Input change: ${name} = ${value}`);
           setFormData(prev => {
@@ -334,12 +334,12 @@
             return newData;
           });
           setErrors(prev => ({ ...prev, [name]: validateInput(name, value) }));
-        }, 300), []);
+        };
 
         const handleSkillChange = (index, field, value) => {
           console.log(`Skill change: index=${index}, field=${field}, value=${value}`);
           setFormData(prev => {
-            const newSkills = [...prev.skills];
+            const newSkills = [...(prev.skills || [])];
             newSkills[index] = { ...newSkills[index], [field]: value };
             const newData = { ...prev, skills: newSkills };
             try {
@@ -356,7 +356,7 @@
         const handleProjectChange = (index, field, value) => {
           console.log(`Project change: index=${index}, field=${field}, value=${value}`);
           setFormData(prev => {
-            const newProjects = [...prev.projects];
+            const newProjects = [...(prev.projects || [])];
             newProjects[index] = { ...newProjects[index], [field]: value };
             const newData = { ...prev, projects: newProjects };
             try {
@@ -374,7 +374,7 @@
           console.log('Adding new skill');
           setFormData(prev => ({
             ...prev,
-            skills: [...prev.skills, { name: '', proficiency: 50 }]
+            skills: [...(prev.skills || []), { name: '', proficiency: 50 }]
           }));
         };
 
@@ -382,7 +382,7 @@
           console.log(`Removing skill at index ${index}`);
           setFormData(prev => ({
             ...prev,
-            skills: prev.skills.filter((_, i) => i !== index)
+            skills: (prev.skills || []).filter((_, i) => i !== index)
           }));
         };
 
@@ -390,7 +390,7 @@
           console.log('Adding new project');
           setFormData(prev => ({
             ...prev,
-            projects: [...prev.projects, { title: '', description: '', link: '', category: '' }]
+            projects: [...(prev.projects || []), { title: '', description: '', link: '', category: '' }]
           }));
         };
 
@@ -398,7 +398,7 @@
           console.log(`Removing project at index ${index}`);
           setFormData(prev => ({
             ...prev,
-            projects: prev.projects.filter((_, i) => i !== index)
+            projects: (prev.projects || []).filter((_, i) => i !== index)
           }));
         };
 
@@ -407,11 +407,13 @@
           const file = e.target.files[0];
           if (type === 'image' && file) {
             if (!file.type.startsWith('image/') || !['image/jpeg', 'image/png'].includes(file.type)) {
+              console.error('Invalid image file type:', file.type);
               setMessage('Please upload a valid image file (JPEG/PNG).');
               setTimeout(() => setMessage(''), 2000);
               return false;
             }
-            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            if (file.size > 5 * 1024 * 1024) {
+              console.error('Image file too large:', file.size);
               setMessage('Image file size must be under 5MB.');
               setTimeout(() => setMessage(''), 2000);
               return false;
@@ -422,14 +424,21 @@
               console.log('Image file loaded');
               setImagePreview(reader.result);
             };
+            reader.onerror = () => {
+              console.error('Error reading image file');
+              setMessage('Error reading image file.');
+              setTimeout(() => setMessage(''), 2000);
+            };
             reader.readAsDataURL(file);
           } else if (type === 'cv' && file) {
             if (file.type !== 'application/pdf') {
+              console.error('Invalid CV file type:', file.type);
               setMessage('Please upload a valid PDF file for CV.');
               setTimeout(() => setMessage(''), 2000);
               return false;
             }
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            if (file.size > 10 * 1024 * 1024) {
+              console.error('CV file too large:', file.size);
               setMessage('CV file size must be under 10MB.');
               setTimeout(() => setMessage(''), 2000);
               return false;
@@ -459,7 +468,7 @@
           return true;
         };
 
-        const handleSubmit = async (e) => {
+        const handleSubmit = (e) => {
           e.preventDefault();
           console.log('Submitting portfolio:', formData);
           const newErrors = {};
@@ -568,7 +577,8 @@
                     onChange={handleChange}
                     placeholder="Brief professional summary"
                     maxLength={500}
-                    currentLength={formData.summary.length}
+                    currentLength={formData.summary ? formData.summary.length : 0}
+                    error={errors.summary}
                   />
                   <FormTextarea
                     id="about"
@@ -578,7 +588,8 @@
                     onChange={handleChange}
                     placeholder="Tell us about yourself"
                     maxLength={1000}
-                    currentLength={formData.about.length}
+                    currentLength={formData.about ? formData.about.length : 0}
+                    error={errors.about}
                   />
                   <FormInput
                     id="email"
@@ -599,6 +610,7 @@
                     onChange={handleChange}
                     type="tel"
                     placeholder="123-456-7890"
+                    error={errors.phone}
                   />
                   <FormInput
                     id="linkedin"
@@ -626,9 +638,9 @@
                   />
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
-                    {formData.skills.map((skill, index) => (
+                    {(formData.skills || []).map((skill, index) => (
                       <SkillInput
-                        key={index}
+                        key={`skill-${index}`}
                         index={index}
                         skill={skill}
                         onChange={handleSkillChange}
@@ -647,9 +659,9 @@
                   </div>
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Projects</label>
-                    {formData.projects.map((project, index) => (
+                    {(formData.projects || []).map((project, index) => (
                       <ProjectInput
-                        key={index}
+                        key={`project-${index}`}
                         index={index}
                         project={project}
                         onChange={handleProjectChange}
@@ -671,7 +683,7 @@
                     <select
                       id="template"
                       name="template"
-                      value={formData.template}
+                      value={formData.template || 'default'}
                       onChange={handleChange}
                       className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
                     >
@@ -685,7 +697,7 @@
                       type="submit"
                       className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
                       aria-label="Create portfolio"
-                      disabled={Object.keys(errors).some(key => errors[key])}
+                      disabled={Object.keys(errors).length > 0}
                     >
                       Create Portfolio
                     </button>
