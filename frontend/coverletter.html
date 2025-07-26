@@ -30,14 +30,10 @@
   <script type="text/babel">
     try {
       console.log('Loading coverletter.html...');
-      const { useState, useCallback, useMemo } = React;
+      const { useState } = React;
 
       const initialFormData = {
-        name: '',
-        company: '',
-        jobTitle: '',
-        motivation: '',
-        skills: ''
+        name: '', company: '', jobTitle: '', motivation: '', skills: ''
       };
 
       const FormInput = ({ id, name, label, value, onChange, required, placeholder, error }) => {
@@ -88,9 +84,7 @@
 
       const CoverLetterPreview = ({ formData, showPreview, togglePreview }) => {
         console.log('Rendering CoverLetterPreview');
-        const skillsList = useMemo(() => {
-          return formData.skills ? formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill) : [];
-        }, [formData.skills]);
+        const skillsList = formData.skills ? formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill) : [];
 
         return (
           <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
@@ -123,14 +117,6 @@
         const [showPreview, setShowPreview] = useState(true);
         const [errors, setErrors] = useState({});
 
-        const debounce = (func, wait) => {
-          let timeout;
-          return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-          };
-        };
-
         const validateInput = (name, value) => {
           if (['name', 'company', 'jobTitle'].includes(name) && value.trim().length < 2) {
             return `${name.charAt(0).toUpperCase() + name.slice(1)} must be at least 2 characters`;
@@ -144,7 +130,7 @@
           return '';
         };
 
-        const handleChange = useCallback(debounce((e) => {
+        const handleChange = (e) => {
           const { name, value } = e.target;
           console.log(`Input change: ${name} = ${value}`);
           setFormData(prev => ({
@@ -155,7 +141,7 @@
             ...prev,
             [name]: validateInput(name, value)
           }));
-        }, 300), []);
+        };
 
         const handleSubmit = (e) => {
           e.preventDefault();
@@ -166,14 +152,18 @@
             if (error) newErrors[key] = error;
           });
           setErrors(newErrors);
-          alert('Cover letter submitted! Backend integration pending.');
+          if (Object.keys(newErrors).length === 0) {
+            alert('Cover letter submitted! Backend integration pending.');
+          } else {
+            console.log('Submission failed due to validation errors:', newErrors);
+          }
         };
 
-        const handleClear = useCallback(() => {
+        const handleClear = () => {
           console.log('Clearing form');
           setFormData(initialFormData);
           setErrors({});
-        }, []);
+        };
 
         console.log('Rendering CoverLetterForm');
         return (
@@ -239,7 +229,7 @@
                     type="submit"
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
                     aria-label="Create cover letter"
-                    disabled={Object.keys(errors).some(key => errors[key])}
+                    disabled={Object.keys(errors).length > 0}
                   >
                     Create Cover Letter
                   </button>
