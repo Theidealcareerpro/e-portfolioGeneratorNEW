@@ -1,176 +1,634 @@
 <!DOCTYPE html>
-     <html lang="en">
-     <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <meta name="description" content="Create a professional portfolio for your job search.">
-       <meta name="robots" content="noindex">
-       <title>Create Portfolio - ePortfolio Generator</title>
-       <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-       <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-       <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-       <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
-       <style>
-         body { background-color: #f3f4f6; }
-         .fade-in { animation: fadeIn 1s ease-in; }
-         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-         .preview-toggle { display: none; }
-         @media (max-width: 640px) { .preview-toggle { display: block; } .preview-hidden { display: none; } }
-       </style>
-     </head>
-     <body class="antialiased">
-       <div id="root"></div>
-       <script type="text/babel">
-         const { useState, useEffect } = React;
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Create a professional portfolio with image and CV upload, customizable templates, and live preview.">
+  <meta name="robots" content="noindex">
+  <title>Create Portfolio - ePortfolio Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <style>
+    body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 1s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .preview-toggle { display: none; }
+    @media (max-width: 640px) { .preview-toggle { display: block; } .preview-hidden { display: none; } }
+    .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
+    .error .error-message { display: block; }
+    .input-error { border-color: #dc2626; }
+    .template-default { background-color: #ffffff; color: #1f2937; }
+    .template-dark { background-color: #1f2937; color: #f9fafb; }
+    .template-vibrant { background-color: #fef3c7; color: #7c2d12; }
+    .progress-bar { transition: width 0.3s ease-in-out; }
+    .image-preview { transition: opacity 0.3s ease-in-out; }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="root"></div>
+  <div id="error" class="error-message">
+    <p>Error loading the portfolio page. Please try refreshing or check the console (F12) for details.</p>
+  </div>
+  <script type="text/babel">
+    try {
+      const { useState, useCallback, useEffect, useMemo } = React;
 
-         const PortfolioForm = () => {
-           const [formData, setFormData] = useState({
-             name: '', profession: '', tagline: '', summary: '', about: '',
-             email: '', phone: '', linkedin: '', skills: '', projects: '',
-             template: 'default'
-           });
-           const [showPreview, setShowPreview] = useState(true);
-           const [savedMessage, setSavedMessage] = useState('');
+      const initialFormData = {
+        name: '', profession: '', tagline: '', summary: '', about: '',
+        email: '', phone: '', linkedin: '',
+        skills: [{ name: '', proficiency: 50 }],
+        projects: [{ title: '', description: '', link: '', category: '' }],
+        template: 'default'
+      };
 
-           useEffect(() => {
-             // Load saved data
-             const saved = localStorage.getItem('portfolioForm');
-             if (saved) setFormData(JSON.parse(saved));
-           }, []);
+      const FormInput = ({ id, name, label, value, onChange, required, placeholder, error, type = 'text' }) => (
+        <div className="mb-4">
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
+          <input
+            type={type}
+            id={id}
+            name={name}
+            value={value}
+            onChange={onChange}
+            className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
+            required={required}
+            aria-required={required}
+            placeholder={placeholder}
+            aria-invalid={!!error}
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div>
+      );
 
-           const handleChange = (e) => {
-             const { name, value } = e.target;
-             setFormData(prev => {
-               const newData = { ...prev, [name]: value };
-               localStorage.setItem('portfolioForm', JSON.stringify(newData));
-               setSavedMessage('Data saved locally!');
-               setTimeout(() => setSavedMessage(''), 2000);
-               return newData;
-             });
-           };
+      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength }) => (
+        <div className="mb-4">
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
+          <textarea
+            id={id}
+            name={name}
+            value={value}
+            onChange={onChange}
+            className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+            rows="4"
+            required={required}
+            aria-required={required}
+            placeholder={placeholder}
+            maxLength={maxLength}
+          />
+          {maxLength && <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>}
+        </div>
+      );
 
-           const handleSubmit = (e) => {
-             e.preventDefault();
-             // Placeholder: Will POST to /api/generate?type=portfolio
-             alert('Portfolio form submitted! Backend integration pending.');
-           };
+      const FileInput = ({ id, label, accept, onChange, error }) => (
+        <div className="mb-4">
+          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+          <input
+            type="file"
+            id={id}
+            accept={accept}
+            onChange={onChange}
+            className="w-full text-gray-500"
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div>
+      );
 
-           return (
-             <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
-               <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
-               <h1 className="text-3xl font-bold text-gray-800 mb-6">Create Your Portfolio</h1>
-               <div className="flex flex-col md:flex-row gap-8">
-                 <form onSubmit={handleSubmit} className="md:w-1/2">
-                   <div className="mb-4">
-                     <label htmlFor="name" className="block text-gray-600 mb-2">Full Name *</label>
-                     <input type="text" id="name" name="name" value={formData.name} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="John Doe" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="profession" className="block text-gray-600 mb-2">Profession *</label>
-                     <input type="text" id="profession" name="profession" value={formData.profession} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="Software Developer" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="tagline" className="block text-gray-600 mb-2">Tagline</label>
-                     <input type="text" id="tagline" name="tagline" value={formData.tagline} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="Building the future, one line of code at a time" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="summary" className="block text-gray-600 mb-2">Summary</label>
-                     <textarea id="summary" name="summary" value={formData.summary} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows="4" placeholder="Brief professional summary" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="about" className="block text-gray-600 mb-2">About</label>
-                     <textarea id="about" name="about" value={formData.about} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows="4" placeholder="Tell us about yourself" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="email" className="block text-gray-600 mb-2">Email *</label>
-                     <input type="email" id="email" name="email" value={formData.email} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       required aria-required="true" placeholder="you@example.com" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="phone" className="block text-gray-600 mb-2">Phone</label>
-                     <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="123-456-7890" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="linkedin" className="block text-gray-600 mb-2">LinkedIn URL</label>
-                     <input type="url" id="linkedin" name="linkedin" value={formData.linkedin} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="https://linkedin.com/in/username" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="skills" className="block text-gray-600 mb-2">Skills (comma-separated)</label>
-                     <input type="text" id="skills" name="skills" value={formData.skills} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="JavaScript, React, Python" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="projects" className="block text-gray-600 mb-2">Projects</label>
-                     <textarea id="projects" name="projects" value={formData.projects} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       rows="4" placeholder="Describe your projects" />
-                   </div>
-                   <div className="mb-4">
-                     <label htmlFor="template" className="block text-gray-600 mb-2">Template</label>
-                     <select id="template" name="template" value={formData.template} onChange={handleChange}
-                       className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                       <option value="default">Default</option>
-                       <option value="dark">Dark</option>
-                       <option value="vibrant">Vibrant</option>
-                     </select>
-                   </div>
-                   <button type="submit" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                     aria-label="Create portfolio">
-                     Create Portfolio
-                   </button>
-                   <button type="button" onClick={() => { localStorage.removeItem('portfolioForm'); setFormData({}); setSavedMessage('Form cleared!'); setTimeout(() => setSavedMessage(''), 2000); }}
-                     className="ml-4 bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                     aria-label="Clear form">
-                     Clear Form
-                   </button>
-                   {savedMessage && <p className="text-green-600 mt-2">{savedMessage}</p>}
-                 </form>
-                 <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
-                   <button onClick={() => setShowPreview(!showPreview)} className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden">
-                     {showPreview ? 'Hide Preview' : 'Show Preview'}
-                   </button>
-                   <div className="bg-white p-6 rounded-lg shadow-md">
-                     <h2 className="text-2xl font-semibold text-gray-800 mb-4">{formData.name || 'Your Name'}</h2>
-                     <p className="text-gray-600 mb-4">{formData.profession || 'Profession'} | {formData.tagline || 'Tagline'}</p>
-                     <h3 className="text-xl font-semibold text-gray-800 mb-2">About</h3>
-                     <p className="text-gray-600 mb-4">{formData.about || 'Your about section'}</p>
-                     <h3 className="text-xl font-semibold text-gray-800 mb-2">Summary</h3>
-                     <p className="text-gray-600 mb-4">{formData.summary || 'Your summary'}</p>
-                     <h3 className="text-xl font-semibold text-gray-800 mb-2">Skills</h3>
-                     <ul className="list-disc pl-6 text-gray-600 mb-4">
-                       {formData.skills ? formData.skills.split(',').map(skill => <li key={skill}>{skill.trim() || 'Skill'}</li>) : <li>No skills</li>}
-                     </ul>
-                     <h3 className="text-xl font-semibold text-gray-800 mb-2">Projects</h3>
-                     <p className="text-gray-600 mb-4">{formData.projects || 'Your projects'}</p>
-                     <h3 className="text-xl font-semibold text-gray-800 mb-2">Contact</h3>
-                     <p className="text-gray-600">{formData.email || 'email@example.com'}</p>
-                     <p className="text-gray-600">{formData.phone || 'Phone'}</p>
-                     <p className="text-gray-600"><a href={formData.linkedin || '#'}>{formData.linkedin || 'LinkedIn'}</a></p>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           );
-         };
+      const SkillInput = ({ index, skill, onChange, onRemove }) => (
+        <div className="flex space-x-4 mb-4">
+          <div className="flex-1">
+            <label htmlFor={`skill-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Skill {index + 1}</label>
+            <input
+              type="text"
+              id={`skill-${index}`}
+              value={skill.name}
+              onChange={(e) => onChange(index, 'name', e.target.value)}
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+              placeholder="e.g., JavaScript"
+            />
+          </div>
+          <div className="w-1/3">
+            <label htmlFor={`proficiency-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Proficiency (%)</label>
+            <input
+              type="number"
+              id={`proficiency-${index}`}
+              value={skill.proficiency}
+              onChange={(e) => onChange(index, 'proficiency', parseInt(e.target.value) || 0)}
+              min="0"
+              max="100"
+              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="mt-8 bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            aria-label={`Remove skill ${index + 1}`}
+          >
+            Remove
+          </button>
+        </div>
+      );
 
-         const root = ReactDOM.createRoot(document.getElementById('root'));
-         root.render(<PortfolioForm />);
-       </script>
-     </body>
-     </html>
+      const ProjectInput = ({ index, project, onChange, onRemove }) => (
+        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+          <FormInput
+            id={`project-title-${index}`}
+            name={`project-title-${index}`}
+            label={`Project ${index + 1} Title`}
+            value={project.title}
+            onChange={(e) => onChange(index, 'title', e.target.value)}
+            placeholder="Project Title"
+          />
+          <FormTextarea
+            id={`project-description-${index}`}
+            name={`project-description-${index}`}
+            label="Description"
+            value={project.description}
+            onChange={(e) => onChange(index, 'description', e.target.value)}
+            placeholder="Describe your project"
+            maxLength={500}
+            currentLength={project.description.length}
+          />
+          <FormInput
+            id={`project-link-${index}`}
+            name={`project-link-${index}`}
+            label="Project Link (Optional)"
+            value={project.link}
+            onChange={(e) => onChange(index, 'link', e.target.value)}
+            type="url"
+            placeholder="https://project.com"
+          />
+          <FormInput
+            id={`project-category-${index}`}
+            name={`project-category-${index}`}
+            label="Category"
+            value={project.category}
+            onChange={(e) => onChange(index, 'category', e.target.value)}
+            placeholder="e.g., Web Development"
+          />
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            aria-label={`Remove project ${index + 1}`}
+          >
+            Remove
+          </button>
+        </div>
+      );
+
+      const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile }) => {
+        const skillsList = useMemo(() => formData.skills.filter(skill => skill.name), [formData.skills]);
+        const projectsList = useMemo(() => formData.projects.filter(project => project.title), [formData.projects]);
+
+        return (
+          <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
+            <button
+              onClick={togglePreview}
+              className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden"
+              aria-label={showPreview ? 'Hide preview' : 'Show preview'}
+            >
+              {showPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
+            <div className={`p-6 rounded-lg shadow-md template-${formData.template}`}>
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Profile Preview"
+                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-md image-preview"
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-500 image-preview">No Image</div>
+              )}
+              <h2 className="text-2xl font-poppins font-semibold mb-2">{formData.name || 'Your Name'}</h2>
+              <p className="mb-4">{formData.profession || 'Profession'} | {formData.tagline || 'Tagline'}</p>
+              <h3 className="text-xl font-semibold mb-2">About</h3>
+              <p className="mb-4">{formData.about || 'Your about section'}</p>
+              <h3 className="text-xl font-semibold mb-2">Summary</h3>
+              <p className="mb-4">{formData.summary || 'Your summary'}</p>
+              <h3 className="text-xl font-semibold mb-2">Skills</h3>
+              <div className="space-y-2 mb-4">
+                {skillsList.length > 0 ? skillsList.map((skill, index) => (
+                  <div key={index}>
+                    <span>{skill.name || 'Skill'}</span>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-indigo-600 h-2.5 rounded-full progress-bar"
+                        style={{ width: `${skill.proficiency}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )) : <p>No skills provided</p>}
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Projects</h3>
+              <div className="space-y-4 mb-4">
+                {projectsList.length > 0 ? projectsList.map((project, index) => (
+                  <div key={index}>
+                    <h4 className="font-semibold">{project.title || 'Project Title'}</h4>
+                    <p>{project.description || 'Project description'}</p>
+                    {project.link && <a href={project.link} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{project.link}</a>}
+                    <p className="text-sm">{project.category || 'Category'}</p>
+                  </div>
+                )) : <p>No projects provided</p>}
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Contact</h3>
+              <p>{formData.email || 'email@example.com'}</p>
+              <p>{formData.phone || 'Phone'}</p>
+              <p><a href={formData.linkedin || '#'} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{formData.linkedin || 'LinkedIn'}</a></p>
+              {cvFile && (
+                <p className="mt-2">
+                  <a href={URL.createObjectURL(cvFile)} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                    View Uploaded CV ({cvFile.name})
+                  </a>
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const PortfolioForm = () => {
+        const [formData, setFormData] = useState(initialFormData);
+        const [imageFile, setImageFile] = useState(null);
+        const [imagePreview, setImagePreview] = useState(null);
+        const [cvFile, setCvFile] = useState(null);
+        const [showPreview, setShowPreview] = useState(true);
+        const [message, setMessage] = useState('');
+        const [errors, setErrors] = useState({});
+
+        useEffect(() => {
+          const saved = localStorage.getItem('portfolioForm');
+          if (saved) setFormData(JSON.parse(saved));
+        }, []);
+
+        const debounce = (func, wait) => {
+          let timeout;
+          return (...args) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func(...args), wait);
+          };
+        };
+
+        const validateInput = (name, value) => {
+          if (['name', 'profession', 'email'].includes(name) && value.trim().length < 2) {
+            return `${name.charAt(0).toUpperCase() + name.slice(1)} must be at least 2 characters`;
+          }
+          if (name === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return 'Please enter a valid email address';
+          }
+          if (name === 'linkedin' && value && !/^https?:\/\/(www\.)?linkedin\.com\/in\/.+$/.test(value)) {
+            return 'Please enter a valid LinkedIn URL';
+          }
+          return '';
+        };
+
+        const handleChange = useCallback(debounce((e) => {
+          const { name, value } = e.target;
+          setFormData(prev => {
+            const newData = { ...prev, [name]: value };
+            localStorage.setItem('portfolioForm', JSON.stringify(newData));
+            setMessage('Data saved locally!');
+            setTimeout(() => setMessage(''), 2000);
+            return newData;
+          });
+          setErrors(prev => ({ ...prev, [name]: validateInput(name, value) }));
+        }, 300), []);
+
+        const handleSkillChange = (index, field, value) => {
+          setFormData(prev => {
+            const newSkills = [...prev.skills];
+            newSkills[index] = { ...newSkills[index], [field]: value };
+            const newData = { ...prev, skills: newSkills };
+            localStorage.setItem('portfolioForm', JSON.stringify(newData));
+            setMessage('Data saved locally!');
+            setTimeout(() => setMessage(''), 2000);
+            return newData;
+          });
+        };
+
+        const handleProjectChange = (index, field, value) => {
+          setFormData(prev => {
+            const newProjects = [...prev.projects];
+            newProjects[index] = { ...newProjects[index], [field]: value };
+            const newData = { ...prev, projects: newProjects };
+            localStorage.setItem('portfolioForm', JSON.stringify(newData));
+            setMessage('Data saved locally!');
+            setTimeout(() => setMessage(''), 2000);
+            return newData;
+          });
+        };
+
+        const addSkill = () => {
+          setFormData(prev => ({
+            ...prev,
+            skills: [...prev.skills, { name: '', proficiency: 50 }]
+          }));
+        };
+
+        const removeSkill = (index) => {
+          setFormData(prev => ({
+            ...prev,
+            skills: prev.skills.filter((_, i) => i !== index)
+          }));
+        };
+
+        const addProject = () => {
+          setFormData(prev => ({
+            ...prev,
+            projects: [...prev.projects, { title: '', description: '', link: '', category: '' }]
+          }));
+        };
+
+        const removeProject = (index) => {
+          setFormData(prev => ({
+            ...prev,
+            projects: prev.projects.filter((_, i) => i !== index)
+          }));
+        };
+
+        const handleFileChange = (e, type) => {
+          const file = e.target.files[0];
+          if (type === 'image' && file) {
+            if (!file.type.startsWith('image/') || !['image/jpeg', 'image/png'].includes(file.type)) {
+              setMessage('Please upload a valid image file (JPEG/PNG).');
+              setTimeout(() => setMessage(''), 2000);
+              return;
+            }
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+              setMessage('Image file size must be under 5MB.');
+              setTimeout(() => setMessage(''), 2000);
+              return;
+            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setImagePreview(reader.result);
+            reader.readAsDataURL(file);
+          } else if (type === 'cv' && file) {
+            if (file.type !== 'application/pdf') {
+              setMessage('Please upload a valid PDF file for CV.');
+              setTimeout(() => setMessage(''), 2000);
+              return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+              setMessage('CV file size must be under 10MB.');
+              setTimeout(() => setMessage(''), 2000);
+              return;
+            }
+            setCvFile(file);
+          } else {
+            if (type === 'image') {
+              setImageFile(null);
+              setImagePreview(null);
+            } else {
+              setCvFile(null);
+            }
+          }
+        };
+
+        const handleSubmit = async (e) => {
+          e.preventDefault();
+          const newErrors = {};
+          ['name', 'profession', 'email', 'linkedin'].forEach(key => {
+            const error = validateInput(key, formData[key]);
+            if (error) newErrors[key] = error;
+          });
+          setErrors(newErrors);
+
+          if (Object.keys(newErrors).length === 0) {
+            const data = new FormData();
+            for (const key in formData) {
+              if (Array.isArray(formData[key])) {
+                data.append(key, JSON.stringify(formData[key]));
+              } else {
+                data.append(key, formData[key]);
+              }
+            }
+            if (imageFile) data.append('image', imageFile);
+            if (cvFile) data.append('cv', cvFile);
+
+            try {
+              // Placeholder for backend integration
+              setMessage('Portfolio submitted! Backend integration pending.');
+              setTimeout(() => setMessage(''), 2000);
+            } catch (error) {
+              setMessage('Error submitting portfolio. Please try again.');
+              setTimeout(() => setMessage(''), 2000);
+            }
+          }
+        };
+
+        const handleClear = () => {
+          localStorage.removeItem('portfolioForm');
+          setFormData(initialFormData);
+          setImageFile(null);
+          setImagePreview(null);
+          setCvFile(null);
+          setErrors({});
+          setMessage('Form cleared!');
+          setTimeout(() => setMessage(''), 2000);
+        };
+
+        return (
+          <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
+            <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
+            <h1 className="text-3xl font-poppins font-bold text-gray-800 mb-6">Create Your Portfolio</h1>
+            <div className="flex flex-col md:flex-row gap-8">
+              <div className="md:w-1/2">
+                {imagePreview && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Profile Image Preview</h3>
+                    <img src={imagePreview} alt="Profile Preview" className="w-32 h-32 rounded-full object-cover shadow-md image-preview" />
+                  </div>
+                )}
+                <form onSubmit={handleSubmit}>
+                  <FormInput
+                    id="name"
+                    name="name"
+                    label="Full Name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder="John Doe"
+                    error={errors.name}
+                  />
+                  <FormInput
+                    id="profession"
+                    name="profession"
+                    label="Profession"
+                    value={formData.profession}
+                    onChange={handleChange}
+                    required
+                    placeholder="Software Developer"
+                    error={errors.profession}
+                  />
+                  <FormInput
+                    id="tagline"
+                    name="tagline"
+                    label="Tagline"
+                    value={formData.tagline}
+                    onChange={handleChange}
+                    placeholder="Building the future, one line of code at a time"
+                  />
+                  <FormTextarea
+                    id="summary"
+                    name="summary"
+                    label="Summary"
+                    value={formData.summary}
+                    onChange={handleChange}
+                    placeholder="Brief professional summary"
+                    maxLength={500}
+                    currentLength={formData.summary.length}
+                  />
+                  <FormTextarea
+                    id="about"
+                    name="about"
+                    label="About"
+                    value={formData.about}
+                    onChange={handleChange}
+                    placeholder="Tell us about yourself"
+                    maxLength={1000}
+                    currentLength={formData.about.length}
+                  />
+                  <FormInput
+                    id="email"
+                    name="email"
+                    label="Email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    type="email"
+                    placeholder="you@example.com"
+                    error={errors.email}
+                  />
+                  <FormInput
+                    id="phone"
+                    name="phone"
+                    label="Phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    type="tel"
+                    placeholder="123-456-7890"
+                  />
+                  <FormInput
+                    id="linkedin"
+                    name="linkedin"
+                    label="LinkedIn URL"
+                    value={formData.linkedin}
+                    onChange={handleChange}
+                    type="url"
+                    placeholder="https://linkedin.com/in/username"
+                    error={errors.linkedin}
+                  />
+                  <FileInput
+                    id="image-upload"
+                    label="Profile Image (JPEG/PNG, max 5MB)"
+                    accept="image/jpeg,image/png"
+                    onChange={(e) => handleFileChange(e, 'image')}
+                    error={message.includes('image') || message.includes('5MB') ? message : ''}
+                  />
+                  <FileInput
+                    id="cv-upload"
+                    label="Upload CV (PDF, max 10MB)"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileChange(e, 'cv')}
+                    error={message.includes('PDF') || message.includes('10MB') ? message : ''}
+                  />
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
+                    {formData.skills.map((skill, index) => (
+                      <SkillInput
+                        key={index}
+                        index={index}
+                        skill={skill}
+                        onChange={handleSkillChange}
+                        onRemove={removeSkill}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addSkill}
+                      className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Add skill"
+                    >
+                      Add Skill
+                    </button>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Projects</label>
+                    {formData.projects.map((project, index) => (
+                      <ProjectInput
+                        key={index}
+                        index={index}
+                        project={project}
+                        onChange={handleProjectChange}
+                        onRemove={removeProject}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={addProject}
+                      className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      aria-label="Add project"
+                    >
+                      Add Project
+                    </button>
+                  </div>
+                  <div className="mb-4">
+                    <label htmlFor="template" className="block text-sm font-medium text-gray-700 mb-2">Template</label>
+                    <select
+                      id="template"
+                      name="template"
+                      value={formData.template}
+                      onChange={handleChange}
+                      className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                    >
+                      <option value="default">Default</option>
+                      <option value="dark">Dark</option>
+                      <option value="vibrant">Vibrant</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-4">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
+                      aria-label="Create portfolio"
+                      disabled={Object.keys(errors).some(key => errors[key])}
+                    >
+                      Create Portfolio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClear}
+                      className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      aria-label="Clear form"
+                    >
+                      Clear Form
+                    </button>
+                  </div>
+                  {message && <p className={`mt-2 ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>{message}</p>}
+                </form>
+              </div>
+              <PortfolioPreview
+                formData={formData}
+                showPreview={showPreview}
+                togglePreview={() => setShowPreview(!showPreview)}
+                imagePreview={imagePreview}
+                cvFile={cvFile}
+              />
+            </div>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<PortfolioForm />);
+    } catch (error) {
+      console.error('Error in portfolio.html:', error.message);
+      document.getElementById('error').classList.add('error');
+    }
+  </script>
+</body>
+</html>
