@@ -174,13 +174,13 @@
         const [formData, setFormData] = useState({ message: '' });
         const [errors, setErrors] = useState({});
 
-        const debounce = (func, wait) => {
+        const debounce = useCallback((func, wait) => {
           let timeout;
           return (...args) => {
             clearTimeout(timeout);
             timeout = setTimeout(() => func(...args), wait);
           };
-        };
+        }, []);
 
         const validateFeedback = useCallback((value) => {
           if (value.trim().length < 10) {
