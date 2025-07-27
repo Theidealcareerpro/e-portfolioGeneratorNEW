@@ -1,131 +1,169 @@
-const { Octokit } = require('@octokit/rest');
 const { createClient } = require('@supabase/supabase-js');
-const querystring = require('querystring');
+const { Octokit } = require('@octokit/rest');
 const { v4: uuidv4 } = require('uuid');
+const mime = require('mime-types');
 
-// Initialize GitHub client with PAT (stored in Netlify env variables)
-const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
-
-// Initialize Supabase client (store URL and key in Netlify env variables)
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-
-// Simple HTML template for portfolio
-const generatePortfolioHTML = (data) => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${data.name}'s Portfolio</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100 font-sans">
-  <header class="bg-blue-600 text-white p-4">
-    <h1 class="text-3xl">${data.name}</h1>
-    <p>${data.email} | ${data.phone} | <a href="${data.linkedin}" class="underline">LinkedIn</a></p>
-  </header>
-  <main class="max-w-4xl mx-auto p-4">
-    <section>
-      <h2 class="text-2xl mt-4">About Me</h2>
-      <p>${data.about}</p>
-    </section>
-    <section>
-      <h2 class="text-2xl mt-4">Skills</h2>
-      <ul class="list-disc pl-5">${data.skills.split(',').map(skill => `<li>${skill.trim()}</li>`).join('')}</ul>
-    </section>
-    <section>
-      <h2 class="text-2xl mt-4">Projects</h2>
-      ${data.projects.map(project => `
-        <div class="mt-2">
-          <h3 class="text-xl">${project.title}</h3>
-          <p>${project.description}</p>
-        </div>
-      `).join('')}
-    </section>
-  </main>
-</body>
-</html>
-`;
-
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
-  }
-
+exports.handler = async function(event, context) {
   try {
-    // Parse form data (multipart for files, querystring for text)
-    const data = JSON.parse(event.body); // Assumes JSON payload; adjust for multipart if needed
-    const { type, user_email, formData } = data; // type: 'portfolio', 'cv', or 'coverletter'
-    const userId = uuidv4();
-    const repoName = `${type}-user-${userId}`;
-    const repoUrl = `https://eportfoliogen.github.io/${repoName}`;
+    console.log('Starting portfolio generation...');
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY
+    );
 
-    // Create GitHub repository
-    await octokit.repos.createInOrg({
-      org: 'ePortfolioGen',
-      name: repoName,
-      auto_init: true,
-      private: false,
-    });
+    // Parse multipart form data
+    const formData = new URLSearchParams(event.body);
+    const data = {};
+    let imageBase64 = null;
+    let cvBase64 = null;
 
-    // Handle content based on type
-    let fileContent, filePath;
-    if (type === 'portfolio') {
-      fileContent = Buffer.from(generatePortfolioHTML(formData)).toString('base64');
-      filePath = 'index.html';
-    } else {
-      // For CV/cover letter, assume PDF is sent as base64
-      fileContent = formData.pdf; // Base64-encoded PDF
-      filePath = `${type}.pdf`;
+    for (const [key, value] of formData.entries()) {
+      if (key === 'image' && value.startsWith('data:image')) {
+        imageBase64 = value;
+      } else if (key === 'cv' && value.startsWith('data:application/pdf')) {
+        cvBase64 = value;
+      } else if (key === 'skills' || key === 'projects') {
+        data[key] = JSON.parse(value);
+      } else {
+        data[key] = value;
+      }
     }
 
-    // Commit file to gh-pages branch
+    const userId = uuidv4();
+    const portfolioUrl = `https://eportfoliogen.github.io/portfolio-${userId}`;
+
+    // Save to Supabase
+    const { data: portfolioData, error: portfolioError } = await supabase
+      .from('portfolios')
+      .insert([{
+        user_id: userId,
+        name: data.name,
+        profession: data.profession,
+        tagline: data.tagline,
+        summary: data.summary,
+        about: data.about,
+        email: data.user_email,
+        phone: data.phone,
+        linkedin: data.linkedin,
+        skills: data.skills,
+        projects: data.projects,
+        template: data.template || 'default',
+        portfolio_url: portfolioUrl
+      }]);
+
+    if (portfolioError) {
+      console.error('Supabase portfolio error:', portfolioError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to save portfolio data' })
+      };
+    }
+
+    // Save analytics
+    const { error: analyticsError } = await supabase
+      .from('analytics')
+      .insert([{ user_id: userId, page_type: 'portfolio', created_at: new Date().toISOString() }]);
+
+    if (analyticsError) {
+      console.error('Supabase analytics error:', analyticsError);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Failed to save analytics data' })
+      };
+    }
+
+    // Generate portfolio HTML
+    const templateStyles = {
+      default: 'background-color: #ffffff; color: #1f2937;',
+      dark: 'background-color: #1f2937; color: #f9fafb;',
+      vibrant: 'background-color: #fef3c7; color: #7c2d12;'
+    };
+    const templateStyle = templateStyles[data.template || 'default'];
+
+    const skillsList = (data.skills || []).filter(skill => skill.name).map((skill, index) => `
+      <div key="skill-${index}">
+        <span>${skill.name}</span>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${skill.proficiency}%"></div>
+        </div>
+      </div>
+    `).join('') || '<p>No skills provided</p>';
+
+    const projectsList = (data.projects || []).filter(project => project.title).map((project, index) => `
+      <div key="project-${index}">
+        <h4 class="font-semibold">${project.title}</h4>
+        <p>${project.description || 'Project description'}</p>
+        ${project.link ? `<a href="${project.link}" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">${project.link}</a>` : ''}
+        <p class="text-sm">${project.category || 'Category'}</p>
+      </div>
+    `).join('') || '<p>No projects provided</p>';
+
+    const portfolioHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Portfolio of ${data.name || 'User'}">
+        <title>${data.name || 'User'}'s Portfolio</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Inter', sans-serif; }
+          .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+          .progress-bar { transition: width 0.3s ease-in-out; }
+        </style>
+      </head>
+      <body style="${templateStyle}">
+        <div class="container">
+          ${imageBase64 ? `<img src="${imageBase64}" alt="Profile" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-md">` : 
+            `<div class="w-32 h-32 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-500">No Image</div>`}
+          <h2 class="text-2xl font-poppins font-semibold mb-2 text-center">${data.name || 'Your Name'}</h2>
+          <p class="mb-4 text-center">${data.profession || 'Profession'} | ${data.tagline || 'Tagline'}</p>
+          <h3 class="text-xl font-semibold mb-2">About</h3>
+          <p class="mb-4">${data.about || 'Your about section'}</p>
+          <h3 class="text-xl font-semibold mb-2">Summary</h3>
+          <p class="mb-4">${data.summary || 'Your summary'}</p>
+          <h3 class="text-xl font-semibold mb-2">Skills</h3>
+          <div class="space-y-2 mb-4">${skillsList}</div>
+          <h3 class="text-xl font-semibold mb-2">Projects</h3>
+          <div class="space-y-4 mb-4">${projectsList}</div>
+          <h3 class="text-xl font-semibold mb-2">Contact</h3>
+          <p>${data.email || 'email@example.com'}</p>
+          <p>${data.phone || 'Phone'}</p>
+          <p><a href="${data.linkedin || '#'}" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">${data.linkedin || 'LinkedIn'}</a></p>
+          ${cvBase64 ? `<p class="mt-2"><a href="${cvBase64}" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">View CV</a></p>` : ''}
+        </div>
+      </body>
+      </html>
+    `;
+
+    // Push to GitHub
+    const octokit = new Octokit({ auth: process.env.GITHUB_PAT });
+    const repoOwner = 'eportfoliogen';
+    const repoName = 'eportfoliogen.github.io';
+    const path = `portfolio-${userId}.html`;
+
     await octokit.repos.createOrUpdateFileContents({
-      org: 'ePortfolioGen',
+      owner: repoOwner,
       repo: repoName,
-      path: filePath,
-      message: `Add ${type} for user ${userId}`,
-      content: fileContent,
-      branch: 'gh-pages',
+      path,
+      message: `Add portfolio for ${data.name || 'user'}`,
+      content: Buffer.from(portfolioHtml).toString('base64'),
+      committer: { name: 'Portfolio Bot', email: 'bot@eportfoliogen.com' },
+      author: { name: 'Portfolio Bot', email: 'bot@eportfoliogen.com' }
     });
 
-    // Enable GitHub Pages
-    await octokit.repos.update({
-      org: 'ePortfolioGen',
-      repo: repoName,
-      pages: {
-        source: { branch: 'gh-pages', path: '/' },
-      },
-    });
-
-    // Store metadata in Supabase
-    const { error } = await supabase.from('portfolios').insert({
-      id: userId,
-      user_email,
-      [`${type}_repo`]: repoName,
-      [`${type}_url`]: repoUrl,
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
-    });
-    if (error) throw new Error(`Supabase insert failed: ${error.message}`);
-
-    // Log analytics event
-    await supabase.from('analytics').insert({
-      event_type: `${type}_created`,
-      resource_type: type,
-      resource_id: userId,
-      timestamp: new Date().toISOString(),
-    });
-
+    console.log('Portfolio generated successfully:', portfolioUrl);
     return {
       statusCode: 200,
-      body: JSON.stringify({ url: repoUrl, repo: repoName }),
+      body: JSON.stringify({ url: portfolioUrl })
     };
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error generating portfolio:', error.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: `Failed to generate ${data.type}: ${error.message}` }),
+      body: JSON.stringify({ error: 'Internal server error' })
     };
   }
 };
