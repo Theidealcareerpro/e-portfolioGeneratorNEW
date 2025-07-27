@@ -104,8 +104,7 @@
         <section id="feedback" className="py-16 bg-white fade-in" role="region" aria-labelledby="feedback-heading">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 id="feedback-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">We Value Your Feedback</h2>
-            <form onSubmit={handleSubmit} name="feedback" method="POST" data-netlify="true" action="https://theidealcareerprogenerator.netlify.app/feedback-success.html" className="max-w-md mx-auto">
-              <input type="hidden" name="form-name" value="feedback" />
+            <form onSubmit={handleSubmit} name="feedback" method="POST" action="/.netlify/functions/submit-feedback" className="max-w-md mx-auto">
               <div className="mb-4">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Your Feedback</label>
                 <textarea
@@ -183,8 +182,8 @@
           const error = validateFeedback(formData.message);
           setErrors({ message: error });
           if (!error) {
-            console.log('Validation passed, submitting to Netlify');
-            return; // Allow Netlify’s native form submission
+            console.log('Validation passed, submitting to Netlify Function');
+            return; // Allow form submission to the Netlify Function
           } else {
             e.preventDefault(); // Prevent submission if validation fails
           }
