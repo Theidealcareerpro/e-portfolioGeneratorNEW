@@ -3,262 +3,523 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Create a tailored cover letter for your job search.">
+  <meta name="description" content="Create a tailored cover letter for your job application.">
   <meta name="robots" content="noindex">
-  <title>Create Cover Letter - ePortfolio Generator</title>
+  <title>Create Your Cover Letter - ePortfolio Generator</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
-    body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+    body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .preview-toggle { display: none; }
-    @media (max-width: 640px) { .preview-toggle { display: block; } .preview-hidden { display: none; } }
     .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
     .error .error-message { display: block; }
-    .input-error { border-color: #dc2626; }
+    .loading { opacity: 0.5; pointer-events: none; }
+    .hidden-form { display: none; }
+    .preview-container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    .preview-container .header, .preview-container .recipient, .preview-container .date, .preview-container .content, .preview-container .signature {
+      margin-bottom: 20px;
+    }
+    .preview-container .header p, .preview-container .recipient p, .preview-container .date p, .preview-container .content p {
+      margin: 5px 0;
+    }
+    .preview-container .content ul {
+      list-style-type: disc;
+      padding-left: 20px;
+    }
   </style>
 </head>
 <body class="antialiased">
+  <!-- Static form for Netlify Forms detection -->
+  <form name="coverletter" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" class="hidden-form">
+    <input type="hidden" name="form-name" value="coverletter" />
+    <input type="hidden" name="bot-field" />
+    <input name="name" />
+    <input name="email" />
+    <input name="location" />
+    <input name="phone" />
+    <input name="hiringManager" />
+    <input name="company" />
+    <input name="companyAddress" />
+    <input name="date" />
+    <textarea name="opening"></textarea>
+    <textarea name="keyPoints"></textarea>
+    <textarea name="closing"></textarea>
+  </form>
   <div id="root"></div>
-  <div id="error" class="error-message">
-    <p>Error loading the cover letter page. Please try refreshing or check the console (F12) for details.</p>
+  <div id="error" className="error-message">
+    <p>Error loading the page. Please try refreshing or check the console (F12).</p>
   </div>
   <script type="text/babel">
     try {
-      console.log('Loading coverletter.html...');
-      const { useState } = React;
+      const { useState, useCallback } = React;
+      const { jsPDF } = window.jspdf;
 
-      const initialFormData = {
-        name: '', company: '', jobTitle: '', motivation: '', skills: ''
-      };
-
-      const FormInput = ({ id, name, label, value, onChange, required, placeholder, error }) => {
-        console.log(`Rendering FormInput: ${name}`);
-        return (
-          <div className="mb-4">
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-            <input
-              type="text"
-              id={id}
-              name={name}
-              value={value}
-              onChange={onChange}
-              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
-              required={required}
-              aria-required={required}
-              placeholder={placeholder}
-              aria-invalid={!!error}
-            />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      const Header = () => (
+        <header className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in" role="banner">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <h1 className="text-3xl font-poppins font-bold">ePortfolio Generator</h1>
+            <nav className="space-x-6" role="navigation">
+              <a href="/index.html#features" className="hover:text-yellow-400 transition">Features</a>
+              <a href="/index.html#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
+              <a href="/index.html#faq" className="hover:text-yellow-400 transition">FAQ</a>
+              <a href="/index.html#feedback" className="bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition">Feedback</a>
+            </nav>
           </div>
-        );
-      };
+        </header>
+      );
 
-      const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength, error }) => {
-        console.log(`Rendering FormTextarea: ${name}`);
-        return (
-          <div className="mb-4">
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-            <textarea
-              id={id}
-              name={name}
-              value={value}
-              onChange={onChange}
-              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
-              rows="4"
-              required={required}
-              aria-required={required}
-              placeholder={placeholder}
-              maxLength={maxLength}
-              aria-invalid={!!error}
-            />
-            <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      const CoverLetterPreview = ({ formData }) => (
+        <div className="preview-container">
+          <div className="header">
+            <p>{formData.name || "Your Name"}</p>
+            <p>{formData.location || "Location"}</p>
+            <p>{formData.phone || "Phone"}</p>
+            <p>{formData.email || "Email"}</p>
           </div>
-        );
-      };
-
-      const CoverLetterPreview = ({ formData, showPreview, togglePreview }) => {
-        console.log('Rendering CoverLetterPreview');
-        const skillsList = formData.skills ? formData.skills.split(',').map(skill => skill.trim()).filter(skill => skill) : [];
-
-        return (
-          <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
-            <button
-              onClick={togglePreview}
-              className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden"
-              aria-label={showPreview ? 'Hide preview' : 'Show preview'}
-            >
-              {showPreview ? 'Hide Preview' : 'Show Preview'}
-            </button>
-            <div className="bg-white p-6 rounded-lg shadow-md font-sans text-sm">
-              <p className="mb-2">{new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p className="mb-2">{formData.company || 'Company Name'}</p>
-              <p className="mb-4">Dear Hiring Manager,</p>
-              <p className="mb-4">I am excited to apply for the {formData.jobTitle || 'Position'} position at {formData.company || 'Company'}. {formData.motivation || 'Your motivation'}</p>
-              <p className="mb-2">My key skills include:</p>
-              <ul className="list-disc pl-6 mb-4">
-                {skillsList.length > 0 ? skillsList.map((skill, index) => (
-                  <li key={`${skill}-${index}`}>{skill}</li>
-                )) : <li>No skills provided</li>}
-              </ul>
-              <p className="mb-4">Sincerely,<br/>{formData.name || 'Your Name'}</p>
-            </div>
+          <div className="recipient">
+            <p>{formData.hiringManager || "Hiring Manager"}</p>
+            <p>{formData.company || "Company Name"}</p>
+            <p>{formData.companyAddress || "Company Address"}</p>
           </div>
-        );
-      };
+          <div className="date">
+            <p>{formData.date || "Date"}</p>
+          </div>
+          <div className="content">
+            <p>Dear {formData.hiringManager || "Hiring Manager"},</p>
+            <p>{formData.opening || "Opening paragraph"}</p>
+            <ul>
+              {formData.keyPoints.filter(point => point).length > 0 ? (
+                formData.keyPoints.map((point, index) => point && <li key={index}>{point}</li>)
+              ) : (
+                <li>No key points added yet</li>
+              )}
+            </ul>
+            <p>{formData.closing || "Closing paragraph"}</p>
+          </div>
+          <div className="signature">
+            <p>Sincerely,</p>
+            <p>{formData.name || "Your Name"}</p>
+          </div>
+        </div>
+      );
 
       const CoverLetterForm = () => {
-        const [formData, setFormData] = useState(initialFormData);
-        const [showPreview, setShowPreview] = useState(true);
+        const [formData, setFormData] = useState({
+          name: '',
+          email: '',
+          location: '',
+          phone: '',
+          hiringManager: '',
+          company: '',
+          companyAddress: '',
+          date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          opening: '',
+          keyPoints: [''],
+          closing: '',
+        });
         const [errors, setErrors] = useState({});
+        const [message, setMessage] = useState('');
 
-        const validateInput = (name, value) => {
-          if (['name', 'company', 'jobTitle'].includes(name) && value.trim().length < 2) {
-            return `${name.charAt(0).toUpperCase() + name.slice(1)} must be at least 2 characters`;
-          }
-          if (name === 'motivation' && value.trim().length < 10) {
-            return 'Motivation must be at least 10 characters';
-          }
-          if (name === 'skills' && !value.trim()) {
-            return 'At least one skill is required';
-          }
-          return '';
+        const validatePhone = (phone) => {
+          if (!phone) return true;
+          const phoneRegex = /^\+?[1-9]\d{1,14}$|^\d{3}-\d{3}-\d{4}$/;
+          return phoneRegex.test(phone);
         };
 
-        const handleChange = (e) => {
-          const { name, value } = e.target;
-          console.log(`Input change: ${name} = ${value}`);
-          setFormData(prev => ({
-            ...prev,
-            [name]: name === 'motivation' ? value.slice(0, 200) : value
-          }));
-          setErrors(prev => ({
-            ...prev,
-            [name]: validateInput(name, value)
-          }));
-        };
-
-        const handleSubmit = (e) => {
-          e.preventDefault();
-          console.log('Submitting cover letter:', formData);
+        const validateForm = () => {
           const newErrors = {};
-          Object.keys(formData).forEach(key => {
-            const error = validateInput(key, formData[key]);
-            if (error) newErrors[key] = error;
-          });
-          setErrors(newErrors);
-          if (Object.keys(newErrors).length === 0) {
-            alert('Cover letter submitted! Backend integration pending.');
-          } else {
-            console.log('Submission failed due to validation errors:', newErrors);
+          if (!formData.name) newErrors.name = 'Full name is required.';
+          if (!formData.email) newErrors.email = 'Email is required.';
+          else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email address.';
           }
+          if (formData.phone && !validatePhone(formData.phone)) {
+            newErrors.phone = 'Please enter a valid phone number (e.g., +1234567890 or 123-456-7890).';
+          }
+          if (!formData.company) newErrors.company = 'Company name is required.';
+          if (!formData.opening) newErrors.opening = 'Opening paragraph is required.';
+          if (formData.opening.length > 500) newErrors.opening = 'Opening must be 500 characters or less.';
+          if (!formData.keyPoints.some(point => point)) newErrors.keyPoints = 'At least one key point is required.';
+          if (!formData.closing) newErrors.closing = 'Closing paragraph is required.';
+          if (formData.closing.length > 500) newErrors.closing = 'Closing must be 500 characters or less.';
+          setErrors(newErrors);
+          return Object.keys(newErrors).length === 0;
         };
 
-        const handleClear = () => {
-          console.log('Clearing form');
-          setFormData(initialFormData);
-          setErrors({});
+        const handleInputChange = (e, section, index) => {
+          const value = e.target.value;
+          setFormData((prev) => {
+            if (section === 'keyPoints') {
+              const newKeyPoints = [...prev.keyPoints];
+              newKeyPoints[index] = value;
+              return { ...prev, keyPoints: newKeyPoints };
+            } else {
+              return { ...prev, [e.target.name]: value };
+            }
+          });
+          setErrors({ ...errors, [e.target.name]: '', [section]: '' });
         };
 
-        console.log('Rendering CoverLetterForm');
+        const addKeyPoint = () => {
+          setFormData((prev) => ({
+            ...prev,
+            keyPoints: [...prev.keyPoints, ''],
+          }));
+        };
+
+        const removeKeyPoint = (index) => {
+          setFormData((prev) => ({
+            ...prev,
+            keyPoints: prev.keyPoints.filter((_, i) => i !== index),
+          }));
+        };
+
+        const generatePDF = () => {
+          const doc = new jsPDF();
+          let y = 20;
+
+          const addText = (text, x, maxWidth) => {
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.text(lines, x, y);
+            y += lines.length * 7;
+          };
+
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'normal');
+          addText(formData.name || "Your Name", 20, 170);
+          addText(formData.location || "Location", 20, 170);
+          addText(formData.phone || "Phone", 20, 170);
+          addText(formData.email || "Email",22, 170);
+          y += 10;
+
+          addText(formData.hiringManager || "Hiring Manager", 20, 170);
+          addText(formData.company || "Company Name", 20, 170);
+          addText(formData.companyAddress || "Company Address", 20, 170);
+          y += 10;
+
+          addText(formData.date || "Date", 20, 170);
+          y += 10;
+
+          addText(`Dear ${formData.hiringManager || "Hiring Manager"},`, 20, 170);
+          y += 5;
+          addText(formData.opening || "Opening paragraph", 20, 170);
+          y += 5;
+          formData.keyPoints.filter(point => point).forEach(point => {
+            addText(`• ${point}`, 25, 165);
+          });
+          y += 5;
+          addText(formData.closing || "Closing paragraph", 20, 170);
+          y += 10;
+
+          addText("Sincerely,", 20, 170);
+          addText(formData.name || "Your Name", 20, 170);
+
+          doc.save('coverletter.pdf');
+        };
+
+        const handleSubmit = useCallback(async (e) => {
+          e.preventDefault();
+          if (!validateForm()) {
+            setMessage('Please fill out all required fields correctly.');
+            return;
+          }
+          setMessage('Submitting cover letter data...');
+          const form = e.target;
+          const data = new FormData(form);
+          data.append('form-name', 'coverletter');
+          data.append('keyPoints', JSON.stringify(formData.keyPoints.filter(point => point)));
+          try {
+            const response = await fetch('/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams(data).toString(),
+            });
+            if (response.ok) {
+              generatePDF();
+              setMessage('Cover letter submitted and downloaded successfully!');
+              setFormData({
+                name: '',
+                email: '',
+                location: '',
+                phone: '',
+                hiringManager: '',
+                company: '',
+                companyAddress: '',
+                date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                opening: '',
+                keyPoints: [''],
+                closing: '',
+              });
+            } else {
+              setMessage('Error submitting cover letter. Please try again.');
+            }
+          } catch (error) {
+            console.error('Cover letter submission error:', error);
+            setMessage('Error: Unable to submit cover letter. Please check your connection.');
+          }
+        }, [formData]);
+
         return (
-          <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
-            <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
-            <h1 className="text-3xl font-poppins font-bold text-gray-800 mb-6">Create Your Cover Letter</h1>
-            <div className="flex flex-col md:flex-row gap-8">
-              <form onSubmit={handleSubmit} className="md:w-1/2">
-                <FormInput
-                  id="name"
-                  name="name"
-                  label="Full Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="John Doe"
-                  error={errors.name}
-                />
-                <FormInput
-                  id="company"
-                  name="company"
-                  label="Company Name"
-                  value={formData.company}
-                  onChange={handleChange}
-                  required
-                  placeholder="Acme Corp"
-                  error={errors.company}
-                />
-                <FormInput
-                  id="jobTitle"
-                  name="jobTitle"
-                  label="Job Title"
-                  value={formData.jobTitle}
-                  onChange={handleChange}
-                  required
-                  placeholder="Software Engineer"
-                  error={errors.jobTitle}
-                />
-                <FormTextarea
-                  id="motivation"
-                  name="motivation"
-                  label="Motivation (max 200 characters)"
-                  value={formData.motivation}
-                  onChange={handleChange}
-                  required
-                  placeholder="Why you’re excited about this role"
-                  maxLength={200}
-                  currentLength={formData.motivation.length}
-                  error={errors.motivation}
-                />
-                <FormInput
-                  id="skills"
-                  name="skills"
-                  label="Skills (comma-separated)"
-                  value={formData.skills}
-                  onChange={handleChange}
-                  required
-                  placeholder="JavaScript, React, Python"
-                  error={errors.skills}
-                />
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
-                    aria-label="Create cover letter"
-                    disabled={Object.keys(errors).length > 0}
-                  >
-                    Create Cover Letter
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    aria-label="Clear form"
-                  >
-                    Clear Form
-                  </button>
+          <section className="py-16 bg-white fade-in" role="region" aria-labelledby="coverletter-form-heading">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 id="coverletter-form-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">Create Your Tailored Cover Letter</h2>
+              <form name="coverletter" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-xl shadow-lg" role="form" aria-labelledby="coverletter-form-title">
+                <h3 id="coverletter-form-title" className="sr-only">Cover Letter Generator Form</h3>
+                <input type="hidden" name="form-name" value="coverletter" />
+                <input type="hidden" name="bot-field" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input
+                      id="name"
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      required
+                      aria-required="true"
+                      aria-invalid={errors.name ? 'true' : 'false'}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
+                    />
+                    {errors.name && <p id="name-error" className="text-sm text-red-700 mt-1">{errors.name}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                    <input
+                      id="email"
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      required
+                      aria-required="true"
+                      aria-invalid={errors.email ? 'true' : 'false'}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                    />
+                    {errors.email && <p id="email-error" className="text-sm text-red-700 mt-1">{errors.email}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location</label>
+                    <input
+                      id="location"
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone (Optional)</label>
+                    <input
+                      id="phone"
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      aria-invalid={errors.phone ? 'true' : 'false'}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
+                    />
+                    {errors.phone && <p id="phone-error" className="text-sm text-red-700 mt-1">{errors.phone}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="hiringManager" className="block text-sm font-medium text-gray-700">Hiring Manager (Optional)</label>
+                    <input
+                      id="hiringManager"
+                      type="text"
+                      name="hiringManager"
+                      value={formData.hiringManager}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      placeholder="e.g., Jane Doe"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company Name</label>
+                    <input
+                      id="company"
+                      type="text"
+                      name="company"
+                      value={formData.company}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      required
+                      aria-required="true"
+                      aria-invalid={errors.company ? 'true' : 'false'}
+                      aria-describedby={errors.company ? 'company-error' : undefined}
+                    />
+                    {errors.company && <p id="company-error" className="text-sm text-red-700 mt-1">{errors.company}</p>}
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="companyAddress" className="block text-sm font-medium text-gray-700">Company Address (Optional)</label>
+                    <input
+                      id="companyAddress"
+                      type="text"
+                      name="companyAddress"
+                      value={formData.companyAddress}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      placeholder="e.g., 123 Business St, City, Country"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date</label>
+                    <input
+                      id="date"
+                      type="text"
+                      name="date"
+                      value={formData.date}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      aria-describedby="date-desc"
+                    />
+                    <p id="date-desc" className="text-sm text-gray-500 mt-1">Defaults to today's date (e.g., July 27, 2025).</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="opening" className="block text-sm font-medium text-gray-700">Opening Paragraph</label>
+                    <textarea
+                      id="opening"
+                      name="opening"
+                      value={formData.opening}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      rows="4"
+                      maxLength="500"
+                      required
+                      aria-required="true"
+                      aria-invalid={errors.opening ? 'true' : 'false'}
+                      aria-describedby={errors.opening ? 'opening-error' : 'opening-desc'}
+                    />
+                    <p id="opening-desc" className="text-sm text-gray-500 mt-1">Introduce yourself and state the position you're applying for (max 500 characters).</p>
+                    {errors.opening && <p id="opening-error" className="text-sm text-red-700 mt-1">{errors.opening}</p>}
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700">Key Points</label>
+                    {formData.keyPoints.map((point, index) => (
+                      <div key={index} className="flex space-x-4 mt-2">
+                        <input
+                          type="text"
+                          value={point}
+                          onChange={(e) => handleInputChange(e, 'keyPoints', index)}
+                          placeholder={`Key Point ${index + 1}`}
+                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                          aria-label={`Key Point ${index + 1}`}
+                          aria-invalid={errors.keyPoints ? 'true' : 'false'}
+                          aria-describedby={errors.keyPoints ? 'keyPoints-error' : undefined}
+                        />
+                        {formData.keyPoints.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeKeyPoint(index)}
+                            className="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600"
+                            aria-label={`Remove key point ${index + 1}`}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {errors.keyPoints && <p id="keyPoints-error" className="text-sm text-red-700 mt-1">{errors.keyPoints}</p>}
+                    <button
+                      type="button"
+                      onClick={addKeyPoint}
+                      className="mt-2 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                      aria-label="Add another key point"
+                    >
+                      Add Key Point
+                    </button>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label htmlFor="closing" className="block text-sm font-medium text-gray-700">Closing Paragraph</label>
+                    <textarea
+                      id="closing"
+                      name="closing"
+                      value={formData.closing}
+                      onChange={(e) => handleInputChange(e)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      rows="4"
+                      maxLength="500"
+                      required
+                      aria-required="true"
+                      aria-invalid={errors.closing ? 'true' : 'false'}
+                      aria-describedby={errors.closing ? 'closing-error' : 'closing-desc'}
+                    />
+                    <p id="closing-desc" className="text-sm text-gray-500 mt-1">Summarize your interest and invite further discussion (max 500 characters).</p>
+                    {errors.closing && <p id="closing-error" className="text-sm text-red-700 mt-1">{errors.closing}</p>}
+                  </div>
                 </div>
+                <button
+                  type="submit"
+                  className="mt-8 w-full bg-indigo-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-indigo-700 focus:outline-none focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                  aria-label="Generate Cover Letter"
+                >
+                  Generate Cover Letter
+                </button>
+                {message && (
+                  <div className={`mt-6 text-center p-4 rounded-lg ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`} role="alert" aria-live="polite">
+                    {message}
+                  </div>
+                )}
               </form>
-              <CoverLetterPreview
-                formData={formData}
-                showPreview={showPreview}
-                togglePreview={() => setShowPreview(!showPreview)}
-              />
+              <h3 className="text-2xl font-poppins font-bold text-gray-800 mt-12 mb-6 text-center">Live Preview</h3>
+              <CoverLetterPreview formData={formData} />
             </div>
-          </div>
+          </section>
         );
       };
 
+      const App = () => (
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <main>
+            <CoverLetterForm />
+          </main>
+          <footer className="bg-gray-800 text-white py-8 fade-in" role="contentinfo">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <p className="mb-4">Support this free tool!</p>
+              <a
+                href="https://buymeacoffee.com/eportfoliogen"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-yellow-400 text-gray-900 py-3 px-8 rounded-full font-semibold hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                aria-label="Support us on Buy Me a Coffee"
+              >
+                Buy Me a Coffee
+              </a>
+              <p className="mt-4 text-sm">© 2025 ePortfolio Generator. All rights reserved.</p>
+              <nav className="mt-4 space-x-4" aria-label="Footer navigation">
+                <a href="/index.html#features" className="hover:text-yellow-400 transition">Features</a>
+                <a href="/index.html#how-it-works" className="hover:text-yellow-400 transition">How It Works</a>
+                <a href="/index.html#faq" className="hover:text-yellow-400 transition">FAQ</a>
+              </nav>
+            </div>
+          </footer>
+        </div>
+      );
+
       const root = ReactDOM.createRoot(document.getElementById('root'));
-      console.log('Rendering CoverLetterForm...');
-      root.render(<CoverLetterForm />);
+      root.render(<App />);
     } catch (error) {
-      console.error('Error in coverletter.html:', error.message, error.stack);
-      document.getElementById('error').classList.add('error');
+      console.error('Error rendering coverletter.html:', error);
+      document.getElementById('error').className = 'error-message error';
     }
   </script>
 </body>
