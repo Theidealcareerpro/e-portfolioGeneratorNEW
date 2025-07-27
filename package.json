@@ -1,12 +1,8 @@
 {
-  "name": "eportfolio-generator",
-  "version": "1.0.0",
   "dependencies": {
-    "@octokit/rest": "^19.0.5",
-    "puppeteer": "^19.2.2",
-    "qrcode": "^1.5.1",
-    "@supabase/supabase-js": "^2.0.0",
-    "sanitize-html": "^2.7.0",
-    "uuid": "^9.0.0"
+    "@supabase/supabase-js": "^2.45.4",
+    "@octokit/rest": "^21.0.2",
+    "uuid": "^10.0.0",
+    "mime-types": "^2.1.35"
   }
 }
