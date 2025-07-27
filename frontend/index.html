@@ -19,9 +19,16 @@
     .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
     .error .error-message { display: block; }
     .loading { opacity: 0.5; pointer-events: none; }
+    .hidden-form { display: none; }
   </style>
 </head>
 <body class="antialiased">
+  <!-- Static form for Netlify Forms detection -->
+  <form name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" class="hidden-form">
+    <input type="hidden" name="form-name" value="feedback" />
+    <input type="hidden" name="bot-field" />
+    <textarea name="message"></textarea>
+  </form>
   <div id="root"></div>
   <div id="error" className="error-message">
     <p>Error loading the page. Please try refreshing or check the console (F12).</p>
@@ -100,11 +107,24 @@
         </section>
       );
 
-      const Feedback = ({ handleSubmit, formData, setFormData, errors }) => (
+      const Feedback = ({ handleSubmit, formData, setFormData, errors, message }) => (
         <section id="feedback" className="py-16 bg-white fade-in" role="region" aria-labelledby="feedback-heading">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 id="feedback-heading" className="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">We Value Your Feedback</h2>
-            <form onSubmit={handleSubmit} name="feedback" method="POST" action="/.netlify/functions/submit-feedback" className="max-w-md mx-auto">
+            <form
+              onSubmit={handleSubmit}
+              name="feedback"
+              method="POST"
+              data-netlify="true"
+              data-netlify-honeypot="bot-field"
+              action="/feedback-success.html"
+              className="max-w-md mx-auto bg-gray-100 p-8 rounded-xl shadow-lg"
+              role="form"
+              aria-labelledby="feedback-form-title"
+            >
+              <h3 id="feedback-form-title" className="sr-only">Feedback Form</h3>
+              <input type="hidden" name="form-name" value="feedback" />
+              <input type="hidden" name="bot-field" />
               <div className="mb-4">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">Your Feedback</label>
                 <textarea
@@ -118,8 +138,9 @@
                   value={formData.message}
                   onChange={(e) => setFormData({ message: e.target.value })}
                   aria-invalid={!!errors.message}
+                  aria-describedby={errors.message ? 'message-error' : undefined}
                 />
-                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
+                {errors.message && <p id="message-error" className="text-sm text-red-700 mt-1">{errors.message}</p>}
               </div>
               <button
                 type="submit"
@@ -129,6 +150,11 @@
               >
                 Submit Feedback
               </button>
+              {message && (
+                <div className={`mt-6 text-center p-4 rounded-lg ${message.toString().includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`} role="alert" aria-live="polite">
+                  {message}
+                </div>
+              )}
             </form>
           </div>
         </section>
@@ -161,6 +187,7 @@
         const [isLoading, setIsLoading] = useState(true);
         const [formData, setFormData] = useState({ message: '' });
         const [errors, setErrors] = useState({});
+        const [message, setMessage] = useState('');
 
         const debounce = useCallback((func, wait) => {
           let timeout;
@@ -182,30 +209,31 @@
           const error = validateFeedback(formData.message);
           setErrors({ message: error });
           if (!error) {
-            console.log('Validation passed, submitting to Netlify Function');
-            return; // Allow form submission to the Netlify Function
+            console.log('Validation passed, submitting to Netlify Forms');
+            setMessage('Feedback submitted successfully!');
+            return; // Allow form submission
           } else {
             e.preventDefault(); // Prevent submission if validation fails
+            setMessage('Error: Please fix the form errors.');
           }
         }, [formData.message]);
-
-        const handleScroll = useCallback(debounce(() => {
-          const hash = window.location.hash;
-          if (hash) {
-            const element = document.querySelector(hash);
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth' });
-            }
-          }
-        }, 100), []);
 
         useEffect(() => {
           console.log('App mounted');
           setIsLoading(false);
+          const handleScroll = debounce(() => {
+            const hash = window.location.hash;
+            if (hash) {
+              const element = document.querySelector(hash);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }
+          }, 100);
           window.addEventListener('hashchange', handleScroll);
           handleScroll();
           return () => window.removeEventListener('hashchange', handleScroll);
-        }, [handleScroll]);
+        }, [debounce]);
 
         return (
           <div className={`min-h-screen bg-gray-50 ${isLoading ? 'loading' : ''}`}>
@@ -214,7 +242,7 @@
               <Hero />
               <Features />
               <HowItWorks />
-              <Feedback handleSubmit={handleSubmit} formData={formData} setFormData={setFormData} errors={errors} />
+              <Feedback handleSubmit={handleSubmit} formData={formData} setFormData={setFormData} errors={errors} message={message} />
             </main>
             <Footer />
           </div>
