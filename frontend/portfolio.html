@@ -527,8 +527,6 @@
 
           if (Object.keys(newErrors).length === 0) {
             const data = new FormData();
-            data.append('type', 'portfolio');
-            data.append('user_email', formData.email);
             for (const key in formData) {
               if (Array.isArray(formData[key])) {
                 data.append(key, JSON.stringify(formData[key]));
@@ -536,38 +534,59 @@
                 data.append(key, formData[key]);
               }
             }
-            if (imageFile) data.append('image', imageFile);
-            if (cvFile) data.append('cv', cvFile);
-
-            try {
-              await fetch('/', {
-                method: 'POST',
-                body: data,
-              });
-
-              const response = await fetch('/api/generate', {
-                method: 'POST',
-                body: data,
-              });
-              const result = await response.json();
-              if (response.ok) {
-                console.log('Portfolio submission successful:', result);
-                setPortfolioUrl(result.url);
-                setMessage('Portfolio created successfully!');
-                setTimeout(() => setMessage(''), 2000);
-              } else {
-                console.error('Submission error:', result.error);
-                setMessage(`Error: ${result.error}`);
-                setTimeout(() => setMessage(''), 2000);
-              }
-            } catch (error) {
-              console.error('Submission error:', error.message);
-              setMessage('Error submitting portfolio. Please try again.');
-              setTimeout(() => setMessage(''), 2000);
+            if (imageFile) {
+              const reader = new FileReader();
+              reader.onloadend = async () => {
+                data.append('image', reader.result);
+                if (cvFile) {
+                  const cvReader = new FileReader();
+                  cvReader.onloadend = async () => {
+                    data.append('cv', cvReader.result);
+                    await submitForm(data);
+                  };
+                  cvReader.readAsDataURL(cvFile);
+                } else {
+                  await submitForm(data);
+                }
+              };
+              reader.readAsDataURL(imageFile);
+            } else if (cvFile) {
+              const reader = new FileReader();
+              reader.onloadend = async () => {
+                data.append('cv', reader.result);
+                await submitForm(data);
+              };
+              reader.readAsDataURL(cvFile);
+            } else {
+              await submitForm(data);
             }
           } else {
             console.log('Submission failed due to validation errors:', newErrors);
             setMessage('Please fix the errors before submitting.');
+            setTimeout(() => setMessage(''), 2000);
+          }
+        };
+
+        const submitForm = async (data) => {
+          try {
+            const response = await fetch('/api/generate', {
+              method: 'POST',
+              body: data,
+            });
+            const result = await response.json();
+            if (response.ok) {
+              console.log('Portfolio submission successful:', result);
+              setPortfolioUrl(result.url);
+              setMessage('Portfolio created successfully!');
+              setTimeout(() => setMessage(''), 2000);
+            } else {
+              console.error('Submission error:', result.error);
+              setMessage(`Error: ${result.error}`);
+              setTimeout(() => setMessage(''), 2000);
+            }
+          } catch (error) {
+            console.error('Submission error:', error.message);
+            setMessage('Error submitting portfolio. Please try again.');
             setTimeout(() => setMessage(''), 2000);
           }
         };
@@ -614,11 +633,8 @@
                 )
               ),
               React.createElement('form', {
-                onSubmit: handleSubmit,
-                'data-netlify': 'true',
-                name: 'portfolio'
+                onSubmit: handleSubmit
               },
-                React.createElement('input', { type: 'hidden', name: 'form-name', value: 'portfolio' }),
                 React.createElement(FormInput, {
                   id: 'name',
                   name: 'name',
