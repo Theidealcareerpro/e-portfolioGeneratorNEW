@@ -27,7 +27,7 @@
   <form name="feedback" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" class="hidden-form">
     <input type="hidden" name="form-name" value="feedback" />
     <input type="hidden" name="bot-field" />
-    <textarea name="message"></textarea>
+    <textarea name="message" id="static-message"></textarea>
   </form>
   <div id="root"></div>
   <div id="error" className="error-message">
@@ -205,15 +205,32 @@
         }, []);
 
         const handleSubmit = useCallback((e) => {
+          e.preventDefault();
           console.log('Handling feedback form submission');
           const error = validateFeedback(formData.message);
           setErrors({ message: error });
           if (!error) {
             console.log('Validation passed, submitting to Netlify Forms');
-            setMessage('Feedback submitted successfully!');
-            return; // Allow form submission
+            const form = e.target;
+            const formDataObj = new FormData(form);
+            formDataObj.append('form-name', 'feedback');
+            formDataObj.append('message', formData.message); // Ensure message field
+            fetch('/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams(formDataObj).toString()
+            })
+              .then(() => {
+                setMessage('Feedback submitted successfully!');
+                setTimeout(() => {
+                  window.location.href = '/feedback-success.html';
+                }, 1000);
+              })
+              .catch((error) => {
+                console.error('Submission error:', error);
+                setMessage('Error: Failed to submit feedback.');
+              });
           } else {
-            e.preventDefault(); // Prevent submission if validation fails
             setMessage('Error: Please fix the form errors.');
           }
         }, [formData.message]);
