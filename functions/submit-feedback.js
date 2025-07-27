@@ -16,10 +16,10 @@ exports.handler = async (event) => {
       body: ''
     };
   } catch (error) {
-    console.error('Error processing feedback:', error);
+    console.error('Error processing feedback:', error.message);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to process feedback' })
+      body: JSON.stringify({ error: 'Failed to process feedback: ' + error.message })
     };
   }
 };
