@@ -2,67 +2,49 @@ const { createClient } = require('@supabase/supabase-js');
 const { Octokit } = require('@octokit/rest');
 
 exports.handler = async (event) => {
-  if (event.headers['supabase_db_webhook_secret'] !== process.env.SUPABASE_DB_WEBHOOK_SECRET) {
-    console.error('Unauthorized webhook request');
-    return {
-      statusCode: 401,
-      body: JSON.stringify({ error: 'Unauthorized' })
-    };
-  }
-
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY // service_role key
-  );
-  const octokit = new Octokit({ auth: process.env.GH_TOKEN }); // Changed from GITHUB_TOKEN
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+  const octokit = new Octokit({ auth: process.env.GH_TOKEN });
 
   try {
-    const payload = JSON.parse(event.body);
-    const deletedPortfolio = payload.record || {};
-
-    if (deletedPortfolio.portfolio_url) {
-      const repoName = deletedPortfolio.portfolio_url.split('/').pop();
-      try {
-        await octokit.repos.delete({
-          owner: process.env.GH_ORG, // Changed from GITHUB_ORG
-          repo: repoName
-        });
-        console.log(`Deleted GitHub repository: ${repoName}`);
-      } catch (error) {
-        console.error(`Error deleting GitHub repo ${repoName}:`, error.message);
-      }
+    // Verify webhook secret
+    const secret = event.headers['x-webhook-secret'];
+    if (secret !== process.env.SUPABASE_DB_WEBHOOK_SECRET) {
+      throw new Error('Invalid webhook secret');
     }
 
-    const { data, error } = await supabase
-      .from('portfolios')
-      .select('id, portfolio_url')
-      .lt('expires_at', new Date().toISOString());
-
-    if (error) throw new Error(error.message);
-
-    for (const portfolio of data) {
-      const repoName = portfolio.portfolio_url.split('/').pop();
-      try {
-        await octokit.repos.delete({
-          owner: process.env.GH_ORG, // Changed from GITHUB_ORG
-          repo: repoName
-        });
-        console.log(`Deleted GitHub repository: ${repoName}`);
-      } catch (error) {
-        console.error(`Error deleting GitHub repo ${repoName}:`, error.message);
-      }
-      await supabase.from('portfolios').delete().eq('id', portfolio.id);
-      console.log(`Deleted portfolio record: ${portfolio.id}`);
+    // Parse webhook payload
+    const { record } = JSON.parse(event.body);
+    if (!record || !record.portfolio_url) {
+      throw new Error('Invalid webhook payload');
     }
+
+    // Extract repo name from portfolio_url
+    const repoName = record.portfolio_url.split('/').pop();
+
+    // Delete GitHub repository
+    await octokit.repos.delete({
+      owner: process.env.GH_ORG,
+      repo: repoName
+    });
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Cleanup completed' })
+      headers: {
+        'Access-Control-Allow-Origin': 'https://theidealcareerprogenerator.netlify.app',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: JSON.stringify({ message: 'Portfolio deleted' })
     };
   } catch (error) {
-    console.error('Cleanup error:', error.message);
+    console.error('Error:', error.message);
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': 'https://theidealcareerprogenerator.netlify.app',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
       body: JSON.stringify({ error: error.message })
     };
   }
