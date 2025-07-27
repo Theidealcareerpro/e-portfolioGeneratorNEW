@@ -20,6 +20,63 @@
     .error .error-message { display: block; }
     .loading { opacity: 0.5; pointer-events: none; }
     .hidden-form { display: none; }
+    .preview-container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+    }
+    .preview-container h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .preview-container .contact-info {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .preview-container .contact-info a {
+      color: #2980b9;
+      text-decoration: none;
+    }
+    .preview-container .section {
+      margin-bottom: 20px;
+    }
+    .preview-container .section h2 {
+      font-size: 18px;
+      border-bottom: 2px solid #2980b9;
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+    .preview-container .section ul {
+      list-style-type: disc;
+      padding-left: 20px;
+    }
+    .preview-container .job, .preview-container .education, .preview-container .certification {
+      margin-bottom: 15px;
+    }
+    .preview-container .job h3, .preview-container .education h3, .preview-container .certification h3 {
+      font-size: 16px;
+      margin-bottom: 5px;
+      color: #2c3e50;
+    }
+    .preview-container .job p, .preview-container .education p, .preview-container .certification p {
+      margin: 5px 0;
+    }
+    .preview-container .key-achievements {
+      margin-top: 10px;
+    }
+    .preview-container .key-achievements ul {
+      list-style-type: square;
+    }
   </style>
 </head>
 <body class="antialiased">
@@ -62,6 +119,97 @@
         </header>
       );
 
+      const CVPreview = ({ formData }) => (
+        <div className="preview-container">
+          <h1>{formData.name || "Full Name"}</h1>
+          <div className="contact-info">
+            <span>{formData.location || "Location"}</span> | 
+            <span>{formData.phone || "Phone"}</span> | 
+            <span>{formData.email || "Email"}</span> | 
+            <a href={formData.linkedin || "#"}>{formData.linkedin ? "LinkedIn" : "LinkedIn"}</a> | 
+            <a href={formData.portfolio || "#"}>{formData.portfolio ? "E-portfolio" : "E-portfolio"}</a>
+          </div>
+          <div className="section">
+            <h2>PROFESSIONAL SUMMARY</h2>
+            <p>{formData.summary || "Professional Summary"}</p>
+          </div>
+          <div className="section">
+            <h2>SKILLS AND COMPETENCE</h2>
+            <ul>
+              {formData.skills.filter(skill => skill).length > 0 ? (
+                formData.skills.map((skill, index) => skill && <li key={index}>{skill}</li>)
+              ) : (
+                <li>No skills added yet</li>
+              )}
+            </ul>
+          </div>
+          <div className="section">
+            <h2>EDUCATION</h2>
+            <div>
+              {formData.education.filter(edu => edu.degree || edu.institution).length > 0 ? (
+                formData.education.map((edu, index) => (
+                  (edu.degree || edu.institution) && (
+                    <div key={index} className="education">
+                      <h3>{edu.degree || "Degree"} | {edu.institution || "Institution"} | {edu.year || "Year"}</h3>
+                      {edu.modules && <p><strong>Key Modules:</strong> {edu.modules}</p>}
+                    </div>
+                  )
+                ))
+              ) : (
+                <p>No education entries added yet</p>
+              )}
+            </div>
+          </div>
+          <div className="section">
+            <h2>PROFESSIONAL TRAINING AND CERTIFICATIONS</h2>
+            <div>
+              {formData.certifications.filter(cert => cert.name).length > 0 ? (
+                formData.certifications.map((cert, index) => (
+                  cert.name && (
+                    <div key={index} className="certification">
+                      <p>{cert.name} | {cert.year || cert.status || "N/A"}</p>
+                    </div>
+                  )
+                ))
+              ) : (
+                <p>No certifications added yet</p>
+              )}
+            </div>
+          </div>
+          <div className="section">
+            <h2>PROFESSIONAL EXPERIENCE</h2>
+            <div>
+              {formData.experience.filter(exp => exp.company || exp.period).length > 0 ? (
+                formData.experience.map((exp, index) => (
+                  (exp.company || exp.period) && (
+                    <div key={index} className="job">
+                      <h3>{exp.company || "Company"} – {exp.location || "Location"}</h3>
+                      <p>{exp.period || "Period"}</p>
+                      <p><strong>{exp.roles.filter(role => role).join(" / ") || "Roles"}</strong></p>
+                      {exp.description && <p>{exp.description}</p>}
+                      {exp.achievements.filter(ach => ach).length > 0 && (
+                        <div className="key-achievements">
+                          <strong>Key Achievements:</strong>
+                          <ul>
+                            {exp.achievements.map((ach, achIndex) => ach && <li key={achIndex}>{ach}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )
+                ))
+              ) : (
+                <p>No experience entries added yet</p>
+              )}
+            </div>
+          </div>
+          <div className="section">
+            <h2>PROFESSIONAL PROJECT EXPERIENCE</h2>
+            <p>Please see E-portfolio: <a href={formData.portfolio || "#"}>{formData.portfolio || "Portfolio"}</a></p>
+          </div>
+        </div>
+      );
+
       const CVForm = () => {
         const [formData, setFormData] = useState({
           name: '',
@@ -85,6 +233,12 @@
           return urlRegex.test(url);
         };
 
+        const validatePhone = (phone) => {
+          if (!phone) return true;
+          const phoneRegex = /^\+?[1-9]\d{1,14}$|^\d{3}-\d{3}-\d{4}$/;
+          return phoneRegex.test(phone);
+        };
+
         const validateForm = () => {
           const newErrors = {};
           if (!formData.name) newErrors.name = 'Full name is required.';
@@ -92,13 +246,34 @@
           else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = 'Please enter a valid email address.';
           }
-          if (!formData.summary) newErrors.summary = 'Professional summary is required.';
+          if (formData.phone && !validatePhone(formData.phone)) {
+            newErrors.phone = 'Please enter a valid phone number (e.g., +1234567890 or 123-456-7890).';
+          }
           if (formData.linkedin && !validateUrl(formData.linkedin)) {
             newErrors.linkedin = 'Please enter a valid LinkedIn URL.';
           }
           if (formData.portfolio && !validateUrl(formData.portfolio)) {
             newErrors.portfolio = 'Please enter a valid portfolio URL.';
           }
+          if (!formData.summary) newErrors.summary = 'Professional summary is required.';
+          if (formData.summary.length > 1000) newErrors.summary = 'Summary must be 1000 characters or less.';
+          if (!formData.skills.some(skill => skill)) newErrors.skills = 'At least one skill is required.';
+          if (!formData.education.some(edu => edu.degree && edu.institution)) {
+            newErrors.education = 'At least one education entry with degree and institution is required.';
+          }
+          formData.education.forEach((edu, index) => {
+            if (edu.modules && edu.modules.length > 500) {
+              newErrors[`education-${index}-modules`] = 'Modules must be 500 characters or less.';
+            }
+          });
+          if (!formData.experience.some(exp => exp.company && exp.period)) {
+            newErrors.experience = 'At least one experience entry with company and period is required.';
+          }
+          formData.experience.forEach((exp, index) => {
+            if (exp.description && exp.description.length > 500) {
+              newErrors[`experience-${index}-description`] = 'Description must be 500 characters or less.';
+            }
+          });
           setErrors(newErrors);
           return Object.keys(newErrors).length === 0;
         };
@@ -132,7 +307,7 @@
               return { ...prev, [e.target.name]: value };
             }
           });
-          setErrors({ ...errors, [e.target.name]: '' });
+          setErrors({ ...errors, [e.target.name]: '', [`${section}-${index}-${field}`]: '' });
         };
 
         const addEntry = (section, defaultEntry) => {
@@ -169,23 +344,24 @@
           const doc = new jsPDF();
           let y = 20;
 
-          // Helper function to add text with wrapping
           const addText = (text, x, maxWidth) => {
             const lines = doc.splitTextToSize(text, maxWidth);
             doc.text(lines, x, y);
             y += lines.length * 7;
           };
 
-          // Header
           doc.setFontSize(24);
           doc.setFont('helvetica', 'bold');
-          addText(formData.name, 20, 170);
+          addText(formData.name || "Full Name", 20, 170);
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          addText(`${formData.location} | ${formData.phone} | ${formData.email} | ${formData.linkedin} | ${formData.portfolio}`, 20, 170);
+          addText(
+            `${formData.location || "Location"} | ${formData.phone || "Phone"} | ${formData.email || "Email"} | ${formData.linkedin || "LinkedIn"} | ${formData.portfolio || "Portfolio"}`,
+            20,
+            170
+          );
           y += 10;
 
-          // Professional Summary
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('PROFESSIONAL SUMMARY', 20, 170);
@@ -194,10 +370,9 @@
           y += 5;
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          addText(formData.summary, 20, 170);
+          addText(formData.summary || "Professional Summary", 20, 170);
           y += 10;
 
-          // Skills
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('SKILLS AND COMPETENCE', 20, 170);
@@ -205,30 +380,26 @@
           y += 5;
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          formData.skills.forEach(skill => {
-            if (skill) addText(`• ${skill}`, 25, 165);
+          formData.skills.filter(skill => skill).forEach(skill => {
+            addText(`• ${skill}`, 25, 165);
           });
           y += 10;
 
-          // Education
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('EDUCATION', 20, 170);
           doc.line(20, y, 190, y);
           y += 5;
           doc.setFontSize(12);
-          formData.education.forEach(edu => {
-            if (edu.degree && edu.institution) {
-              doc.setFont('helvetica', 'bold');
-              addText(`${edu.degree} | ${edu.institution} | ${edu.year}`, 20, 170);
-              doc.setFont('helvetica', 'normal');
-              if (edu.modules) addText(`Key Modules: ${edu.modules}`, 20, 170);
-              y += 5;
-            }
+          formData.education.filter(edu => edu.degree && edu.institution).forEach(edu => {
+            doc.setFont('helvetica', 'bold');
+            addText(`${edu.degree} | ${edu.institution} | ${edu.year || "Year"}`, 20, 170);
+            doc.setFont('helvetica', 'normal');
+            if (edu.modules) addText(`Key Modules: ${edu.modules}`, 20, 170);
+            y += 5;
           });
           y += 10;
 
-          // Certifications
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('PROFESSIONAL TRAINING AND CERTIFICATIONS', 20, 170);
@@ -236,40 +407,36 @@
           y += 5;
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          formData.certifications.forEach(cert => {
-            if (cert.name) addText(`${cert.name} | ${cert.year || cert.status || 'N/A'}`, 20, 170);
+          formData.certifications.filter(cert => cert.name).forEach(cert => {
+            addText(`${cert.name} | ${cert.year || cert.status || "N/A"}`, 20, 170);
           });
           y += 10;
 
-          // Experience
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('PROFESSIONAL EXPERIENCE', 20, 170);
           doc.line(20, y, 190, y);
           y += 5;
           doc.setFontSize(12);
-          formData.experience.forEach(exp => {
-            if (exp.company && exp.period) {
-              doc.setFont('helvetica', 'bold');
-              addText(`${exp.company} – ${exp.location}`, 20, 170);
-              doc.setFont('helvetica', 'normal');
-              addText(exp.period, 20, 170);
-              doc.setFont('helvetica', 'bold');
-              addText(exp.roles.filter(role => role).join(' / '), 20, 170);
-              doc.setFont('helvetica', 'normal');
-              if (exp.description) addText(exp.description, 20, 170);
-              if (exp.achievements.length > 0) {
-                addText('Key Achievements:', 20, 170);
-                exp.achievements.forEach(ach => {
-                  if (ach) addText(`• ${ach}`, 25, 165);
-                });
-              }
-              y += 5;
+          formData.experience.filter(exp => exp.company && exp.period).forEach(exp => {
+            doc.setFont('helvetica', 'bold');
+            addText(`${exp.company} – ${exp.location || "Location"}`, 20, 170);
+            doc.setFont('helvetica', 'normal');
+            addText(exp.period, 20, 170);
+            doc.setFont('helvetica', 'bold');
+            addText(exp.roles.filter(role => role).join(' / '), 20, 170);
+            doc.setFont('helvetica', 'normal');
+            if (exp.description) addText(exp.description, 20, 170);
+            if (exp.achievements.filter(ach => ach).length > 0) {
+              addText('Key Achievements:', 20, 170);
+              exp.achievements.forEach(ach => {
+                if (ach) addText(`• ${ach}`, 25, 165);
+              });
             }
+            y += 5;
           });
           y += 10;
 
-          // Portfolio
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           addText('PROFESSIONAL PROJECT EXPERIENCE', 20, 170);
@@ -277,7 +444,7 @@
           y += 5;
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          addText(`Please see E-portfolio: ${formData.portfolio}`, 20, 170);
+          addText(`Please see E-portfolio: ${formData.portfolio || "Portfolio"}`, 20, 170);
 
           doc.save('cv.pdf');
         };
@@ -388,7 +555,10 @@
                       value={formData.phone}
                       onChange={(e) => handleInputChange(e)}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+                      aria-invalid={errors.phone ? 'true' : 'false'}
+                      aria-describedby={errors.phone ? 'phone-error' : undefined}
                     />
+                    {errors.phone && <p id="phone-error" className="text-sm text-red-700 mt-1">{errors.phone}</p>}
                   </div>
                   <div>
                     <label htmlFor="linkedin" className="block text-sm font-medium text-gray-700">LinkedIn URL (Optional)</label>
@@ -429,12 +599,13 @@
                       onChange={(e) => handleInputChange(e)}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
                       rows="4"
+                      maxLength="1000"
                       required
                       aria-required="true"
                       aria-invalid={errors.summary ? 'true' : 'false'}
                       aria-describedby={errors.summary ? 'summary-error' : 'summary-desc'}
                     />
-                    <p id="summary-desc" className="text-sm text-gray-500 mt-1">Brief overview of your professional background.</p>
+                    <p id="summary-desc" className="text-sm text-gray-500 mt-1">Brief overview of your professional background (max 1000 characters).</p>
                     {errors.summary && <p id="summary-error" className="text-sm text-red-700 mt-1">{errors.summary}</p>}
                   </div>
                 </div>
@@ -449,6 +620,8 @@
                         placeholder={`Skill ${index + 1}`}
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
                         aria-label={`Skill ${index + 1}`}
+                        aria-invalid={errors.skills ? 'true' : 'false'}
+                        aria-describedby={errors.skills ? 'skills-error' : undefined}
                       />
                       {formData.skills.length > 1 && (
                         <button
@@ -462,6 +635,7 @@
                       )}
                     </div>
                   ))}
+                  {errors.skills && <p id="skills-error" className="text-sm text-red-700 mt-1">{errors.skills}</p>}
                   <button
                     type="button"
                     onClick={() => addEntry('skills', '')}
@@ -482,6 +656,8 @@
                         placeholder="Degree"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 mb-2"
                         aria-label={`Education ${index + 1} degree`}
+                        aria-invalid={errors.education ? 'true' : 'false'}
+                        aria-describedby={errors.education ? 'education-error' : undefined}
                       />
                       <input
                         type="text"
@@ -505,8 +681,14 @@
                         placeholder="Key Modules (Optional)"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 mb-2"
                         rows="3"
+                        maxLength="500"
                         aria-label={`Education ${index + 1} modules`}
+                        aria-invalid={errors[`education-${index}-modules`] ? 'true' : 'false'}
+                        aria-describedby={errors[`education-${index}-modules`] ? `education-${index}-modules-error` : undefined}
                       />
+                      {errors[`education-${index}-modules`] && (
+                        <p id={`education-${index}-modules-error`} className="text-sm text-red-700 mt-1">{errors[`education-${index}-modules`]}</p>
+                      )}
                       {formData.education.length > 1 && (
                         <button
                           type="button"
@@ -519,6 +701,7 @@
                       )}
                     </div>
                   ))}
+                  {errors.education && <p id="education-error" className="text-sm text-red-700 mt-1">{errors.education}</p>}
                   <button
                     type="button"
                     onClick={() => addEntry('education', { degree: '', institution: '', year: '', modules: '' })}
@@ -580,6 +763,8 @@
                         placeholder="Company"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 mb-2"
                         aria-label={`Experience ${index + 1} company`}
+                        aria-invalid={errors.experience ? 'true' : 'false'}
+                        aria-describedby={errors.experience ? 'experience-error' : undefined}
                       />
                       <input
                         type="text"
@@ -633,8 +818,14 @@
                         placeholder="Description"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 mb-2"
                         rows="3"
+                        maxLength="500"
                         aria-label={`Experience ${index + 1} description`}
+                        aria-invalid={errors[`experience-${index}-description`] ? 'true' : 'false'}
+                        aria-describedby={errors[`experience-${index}-description`] ? `experience-${index}-description-error` : undefined}
                       />
+                      {errors[`experience-${index}-description`] && (
+                        <p id={`experience-${index}-description-error`} className="text-sm text-red-700 mt-1">{errors[`experience-${index}-description`]}</p>
+                      )}
                       {exp.achievements.map((ach, achIndex) => (
                         <div key={achIndex} className="flex space-x-4 mb-2">
                           <input
@@ -677,6 +868,7 @@
                       )}
                     </div>
                   ))}
+                  {errors.experience && <p id="experience-error" className="text-sm text-red-700 mt-1">{errors.experience}</p>}
                   <button
                     type="button"
                     onClick={() => addEntry('experience', { company: '', location: '', period: '', roles: [''], description: '', achievements: [''] })}
@@ -699,6 +891,8 @@
                   </div>
                 )}
               </form>
+              <h3 className="text-2xl font-poppins font-bold text-gray-800 mt-12 mb-6 text-center">Live Preview</h3>
+              <CVPreview formData={formData} />
             </div>
           </section>
         );
