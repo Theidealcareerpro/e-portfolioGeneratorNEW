@@ -1,4 +1,6 @@
 {
+  "name": "portfolio-generator",
+  "version": "1.0.0",
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "@octokit/rest": "^21.0.2",
