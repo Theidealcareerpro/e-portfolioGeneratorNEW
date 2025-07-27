@@ -569,7 +569,7 @@
 
         const submitForm = async (data) => {
           try {
-            const response = await fetch('/api/generate', {
+            const response = await fetch('https://e-portfolio-generator-new.vercel.app/api/generate', {
               method: 'POST',
               body: data,
             });
