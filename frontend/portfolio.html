@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.6/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <style>
     body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
@@ -32,7 +32,7 @@
   <div id="error" class="error-message">
     <p>Error loading the portfolio page. Please try refreshing or check the console (F12) for details.</p>
   </div>
-  <script type="text/babel">
+  <script>
     try {
       console.log('Loading portfolio.html...');
       const { useState, useEffect } = React;
@@ -47,216 +47,249 @@
 
       const FormInput = ({ id, name, label, value, onChange, required, placeholder, error, type = 'text' }) => {
         console.log(`Rendering FormInput: ${name}`);
-        return (
-          <div className="mb-4">
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-            <input
-              type={type}
-              id={id}
-              name={name}
-              value={value || ''}
-              onChange={onChange}
-              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
-              required={required}
-              aria-required={required}
-              placeholder={placeholder}
-              aria-invalid={!!error}
-            />
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-          </div>
+        return React.createElement('div', { className: 'mb-4' },
+          React.createElement('label', { htmlFor: id, className: 'block text-sm font-medium text-gray-700 mb-2' }, label, required && '*'),
+          React.createElement('input', {
+            type,
+            id,
+            name,
+            value: value || '',
+            onChange,
+            className: `w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`,
+            required,
+            'aria-required': required,
+            placeholder,
+            'aria-invalid': !!error
+          }),
+          error && React.createElement('p', { className: 'text-red-500 text-sm mt-1' }, error)
         );
       };
 
       const FormTextarea = ({ id, name, label, value, onChange, required, placeholder, maxLength, currentLength, error }) => {
         console.log(`Rendering FormTextarea: ${name}`);
-        return (
-          <div className="mb-4">
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label} {required && '*'}</label>
-            <textarea
-              id={id}
-              name={name}
-              value={value || ''}
-              onChange={onChange}
-              className={`w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`}
-              rows="4"
-              required={required}
-              aria-required={required}
-              placeholder={placeholder}
-              maxLength={maxLength}
-              aria-invalid={!!error}
-            />
-            {maxLength && <p className="text-gray-600 text-sm">{currentLength}/{maxLength} characters</p>}
-            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-          </div>
+        return React.createElement('div', { className: 'mb-4' },
+          React.createElement('label', { htmlFor: id, className: 'block text-sm font-medium text-gray-700 mb-2' }, label, required && '*'),
+          React.createElement('textarea', {
+            id,
+            name,
+            value: value || '',
+            onChange,
+            className: `w-full rounded-md border ${error ? 'input-error' : 'border-gray-300'} shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50`,
+            rows: 4,
+            required,
+            'aria-required': required,
+            placeholder,
+            maxLength,
+            'aria-invalid': !!error
+          }),
+          maxLength && React.createElement('p', { className: 'text-gray-600 text-sm' }, `${currentLength}/${maxLength} characters`),
+          error && React.createElement('p', { className: 'text-red-500 text-sm mt-1' }, error)
         );
       };
 
       const FileInput = ({ id, label, accept, onChange, error }) => (
-        <div className="mb-4">
-          <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
-          <input
-            type="file"
-            id={id}
-            accept={accept}
-            onChange={onChange}
-            className="w-full text-gray-500"
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-        </div>
+        React.createElement('div', { className: 'mb-4' },
+          React.createElement('label', { htmlFor: id, className: 'block text-sm font-medium text-gray-700 mb-2' }, label),
+          React.createElement('input', {
+            type: 'file',
+            id,
+            accept,
+            onChange,
+            className: 'w-full text-gray-500'
+          }),
+          error && React.createElement('p', { className: 'text-red-500 text-sm mt-1' }, error)
+        )
       );
 
       const SkillInput = ({ index, skill, onChange, onRemove }) => (
-        <div className="flex space-x-4 mb-4">
-          <div className="flex-1">
-            <label htmlFor={`skill-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Skill {index + 1}</label>
-            <input
-              type="text"
-              id={`skill-${index}`}
-              value={skill.name || ''}
-              onChange={(e) => onChange(index, 'name', e.target.value)}
-              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-              placeholder="e.g., JavaScript"
-            />
-          </div>
-          <div className="w-1/3">
-            <label htmlFor={`proficiency-${index}`} className="block text-sm font-medium text-gray-700 mb-2">Proficiency (%)</label>
-            <input
-              type="number"
-              id={`proficiency-${index}`}
-              value={skill.proficiency || 50}
-              onChange={(e) => onChange(index, 'proficiency', parseInt(e.target.value) || 0)}
-              min="0"
-              max="100"
-              className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="mt-8 bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-            aria-label={`Remove skill ${index + 1}`}
-          >
-            Remove
-          </button>
-        </div>
+        React.createElement('div', { className: 'flex space-x-4 mb-4' },
+          React.createElement('div', { className: 'flex-1' },
+            React.createElement('label', { htmlFor: `skill-${index}`, className: 'block text-sm font-medium text-gray-700 mb-2' }, `Skill ${index + 1}`),
+            React.createElement('input', {
+              type: 'text',
+              id: `skill-${index}`,
+              value: skill.name || '',
+              onChange: (e) => onChange(index, 'name', e.target.value),
+              className: 'w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50',
+              placeholder: 'e.g., JavaScript'
+            })
+          ),
+          React.createElement('div', { className: 'w-1/3' },
+            React.createElement('label', { htmlFor: `proficiency-${index}`, className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Proficiency (%)'),
+            React.createElement('input', {
+              type: 'number',
+              id: `proficiency-${index}`,
+              value: skill.proficiency || 50,
+              onChange: (e) => onChange(index, 'proficiency', parseInt(e.target.value) || 0),
+              min: 0,
+              max: 100,
+              className: 'w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50'
+            })
+          ),
+          React.createElement('button', {
+            type: 'button',
+            onClick: () => onRemove(index),
+            className: 'mt-8 bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500',
+            'aria-label': `Remove skill ${index + 1}`
+          }, 'Remove')
+        )
       );
 
       const ProjectInput = ({ index, project, onChange, onRemove }) => (
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-          <FormInput
-            id={`project-title-${index}`}
-            name={`project-title-${index}`}
-            label={`Project ${index + 1} Title`}
-            value={project.title}
-            onChange={(e) => onChange(index, 'title', e.target.value)}
-            placeholder="Project Title"
-          />
-          <FormTextarea
-            id={`project-description-${index}`}
-            name={`project-description-${index}`}
-            label="Description"
-            value={project.description}
-            onChange={(e) => onChange(index, 'description', e.target.value)}
-            placeholder="Describe your project"
-            maxLength={500}
-            currentLength={project.description ? project.description.length : 0}
-          />
-          <FormInput
-            id={`project-link-${index}`}
-            name={`project-link-${index}`}
-            label="Project Link (Optional)"
-            value={project.link}
-            onChange={(e) => onChange(index, 'link', e.target.value)}
-            type="url"
-            placeholder="https://project.com"
-          />
-          <FormInput
-            id={`project-category-${index}`}
-            name={`project-category-${index}`}
-            label="Category"
-            value={project.category}
-            onChange={(e) => onChange(index, 'category', e.target.value)}
-            placeholder="e.g., Web Development"
-          />
-          <button
-            type="button"
-            onClick={() => onRemove(index)}
-            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-            aria-label={`Remove project ${index + 1}`}
-          >
-            Remove
-          </button>
-        </div>
+        React.createElement('div', { className: 'mb-4 p-4 bg-gray-50 rounded-lg' },
+          React.createElement(FormInput, {
+            id: `project-title-${index}`,
+            name: `project-title-${index}`,
+            label: `Project ${index + 1} Title`,
+            value: project.title,
+            onChange: (e) => onChange(index, 'title', e.target.value),
+            placeholder: 'Project Title'
+          }),
+          React.createElement(FormTextarea, {
+            id: `project-description-${index}`,
+            name: `project-description-${index}`,
+            label: 'Description',
+            value: project.description,
+            onChange: (e) => onChange(index, 'description', e.target.value),
+            placeholder: 'Describe your project',
+            maxLength: 500,
+            currentLength: project.description ? project.description.length : 0
+          }),
+          React.createElement(FormInput, {
+            id: `project-link-${index}`,
+            name: `project-link-${index}`,
+            label: 'Project Link (Optional)',
+            value: project.link,
+            onChange: (e) => onChange(index, 'link', e.target.value),
+            type: 'url',
+            placeholder: 'https://project.com'
+          }),
+          React.createElement(FormInput, {
+            id: `project-category-${index}`,
+            name: `project-category-${index}`,
+            label: 'Category',
+            value: project.category,
+            onChange: (e) => onChange(index, 'category', e.target.value),
+            placeholder: 'e.g., Web Development'
+          }),
+          React.createElement('button', {
+            type: 'button',
+            onClick: () => onRemove(index),
+            className: 'bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500',
+            'aria-label': `Remove project ${index + 1}`
+          }, 'Remove')
+        )
       );
 
-      const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile, cvUrl }) => {
+      const PortfolioPreview = ({ formData, showPreview, togglePreview, imagePreview, cvFile, cvUrl, portfolioUrl }) => {
         console.log('Rendering PortfolioPreview');
         const skillsList = (formData.skills || []).filter(skill => skill.name);
         const projectsList = (formData.projects || []).filter(project => project.title);
 
-        return (
-          <div className={`md:w-1/2 ${showPreview ? '' : 'preview-hidden'}`}>
-            <button
-              onClick={togglePreview}
-              className="preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden"
-              aria-label={showPreview ? 'Hide preview' : 'Show preview'}
-            >
-              {showPreview ? 'Hide Preview' : 'Show Preview'}
-            </button>
-            <div className={`p-6 rounded-lg shadow-md template-${formData.template}`}>
-              {imagePreview ? (
-                <img
-                  src={imagePreview}
-                  alt="Profile Preview"
-                  className="w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-md image-preview"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-500 image-preview">No Image</div>
-              )}
-              <h2 className="text-2xl font-poppins font-semibold mb-2">{formData.name || 'Your Name'}</h2>
-              <p className="mb-4">{formData.profession || 'Profession'} | {formData.tagline || 'Tagline'}</p>
-              <h3 className="text-xl font-semibold mb-2">About</h3>
-              <p className="mb-4">{formData.about || 'Your about section'}</p>
-              <h3 className="text-xl font-semibold mb-2">Summary</h3>
-              <p className="mb-4">{formData.summary || 'Your summary'}</p>
-              <h3 className="text-xl font-semibold mb-2">Skills</h3>
-              <div className="space-y-2 mb-4">
-                {skillsList.length > 0 ? skillsList.map((skill, index) => (
-                  <div key={`skill-${index}`}>
-                    <span>{skill.name}</span>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div
-                        className="bg-indigo-600 h-2.5 rounded-full progress-bar"
-                        style={{ width: `${skill.proficiency}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                )) : <p>No skills provided</p>}
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Projects</h3>
-              <div className="space-y-4 mb-4">
-                {projectsList.length > 0 ? projectsList.map((project, index) => (
-                  <div key={`project-${index}`}>
-                    <h4 className="font-semibold">{project.title}</h4>
-                    <p>{project.description || 'Project description'}</p>
-                    {project.link && <a href={project.link} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{project.link}</a>}
-                    <p className="text-sm">{project.category || 'Category'}</p>
-                  </div>
-                )) : <p>No projects provided</p>}
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Contact</h3>
-              <p>{formData.email || 'email@example.com'}</p>
-              <p>{formData.phone || 'Phone'}</p>
-              <p><a href={formData.linkedin || '#'} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">{formData.linkedin || 'LinkedIn'}</a></p>
-              {cvFile && cvUrl && (
-                <p className="mt-2">
-                  <a href={cvUrl} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                    View Uploaded CV ({cvFile.name})
-                  </a>
-                </p>
-              )}
-            </div>
-          </div>
+        return React.createElement('div', { className: `md:w-1/2 ${showPreview ? '' : 'preview-hidden'}` },
+          React.createElement('button', {
+            onClick: togglePreview,
+            className: 'preview-toggle bg-blue-600 text-white px-4 py-2 rounded-lg mb-4 md:hidden',
+            'aria-label': showPreview ? 'Hide preview' : 'Show preview'
+          }, showPreview ? 'Hide Preview' : 'Show Preview'),
+          React.createElement('div', { className: `p-6 rounded-lg shadow-md template-${formData.template}` },
+            imagePreview ? (
+              React.createElement('img', {
+                src: imagePreview,
+                alt: 'Profile Preview',
+                className: 'w-32 h-32 rounded-full mx-auto mb-4 object-cover shadow-md image-preview'
+              })
+            ) : (
+              React.createElement('div', {
+                className: 'w-32 h-32 rounded-full mx-auto mb-4 bg-gray-200 flex items-center justify-center text-gray-500 image-preview'
+              }, 'No Image')
+            ),
+            React.createElement('h2', { className: 'text-2xl font-poppins font-semibold mb-2' }, formData.name || 'Your Name'),
+            React.createElement('p', { className: 'mb-4' }, `${formData.profession || 'Profession'} | ${formData.tagline || 'Tagline'}`),
+            React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'About'),
+            React.createElement('p', { className: 'mb-4' }, formData.about || 'Your about section'),
+            React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'Summary'),
+            React.createElement('p', { className: 'mb-4' }, formData.summary || 'Your summary'),
+            React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'Skills'),
+            React.createElement('div', { className: 'space-y-2 mb-4' },
+              skillsList.length > 0 ? skillsList.map((skill, index) => (
+                React.createElement('div', { key: `skill-${index}` },
+                  React.createElement('span', null, skill.name),
+                  React.createElement('div', { className: 'w-full bg-gray-200 rounded-full h-2.5' },
+                    React.createElement('div', {
+                      className: 'bg-indigo-600 h-2.5 rounded-full progress-bar',
+                      style: { width: `${skill.proficiency}%` }
+                    })
+                  )
+                )
+              )) : React.createElement('p', null, 'No skills provided')
+            ),
+            React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'Projects'),
+            React.createElement('div', { className: 'space-y-4 mb-4' },
+              projectsList.length > 0 ? projectsList.map((project, index) => (
+                React.createElement('div', { key: `project-${index}` },
+                  React.createElement('h4', { className: 'font-semibold' }, project.title),
+                  React.createElement('p', null, project.description || 'Project description'),
+                  project.link && React.createElement('a', {
+                    href: project.link,
+                    className: 'text-blue-600 hover:underline',
+                    target: '_blank',
+                    rel: 'noopener noreferrer'
+                  }, project.link),
+                  React.createElement('p', { className: 'text-sm' }, project.category || 'Category')
+                )
+              )) : React.createElement('p', null, 'No projects provided')
+            ),
+            React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'Contact'),
+            React.createElement('p', null, formData.email || 'email@example.com'),
+            React.createElement('p', null, formData.phone || 'Phone'),
+            React.createElement('p', null,
+              React.createElement('a', {
+                href: formData.linkedin || '#',
+                className: 'text-blue-600 hover:underline',
+                target: '_blank',
+                rel: 'noopener noreferrer'
+              }, formData.linkedin || 'LinkedIn')
+            ),
+            cvFile && cvUrl && (
+              React.createElement('p', { className: 'mt-2' },
+                React.createElement('a', {
+                  href: cvUrl,
+                  className: 'text-blue-600 hover:underline',
+                  target: '_blank',
+                  rel: 'noopener noreferrer'
+                }, `View Uploaded CV (${cvFile.name})`)
+              )
+            ),
+            portfolioUrl && (
+              React.createElement('div', { className: 'mt-4' },
+                React.createElement('h3', { className: 'text-xl font-semibold mb-2' }, 'Portfolio Link'),
+                React.createElement('p', null,
+                  React.createElement('a', {
+                    href: portfolioUrl,
+                    className: 'text-blue-600 hover:underline',
+                    target: '_blank',
+                    rel: 'noopener noreferrer'
+                  }, portfolioUrl)
+                ),
+                React.createElement('div', { className: 'flex gap-4 mt-2' },
+                  React.createElement('button', {
+                    onClick: () => { navigator.clipboard.writeText(portfolioUrl); alert('URL copied to clipboard!'); },
+                    className: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                    'aria-label': 'Copy portfolio URL'
+                  }, 'Copy URL'),
+                  React.createElement('a', {
+                    href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(portfolioUrl)}`,
+                    className: 'bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    'aria-label': 'Share on LinkedIn'
+                  }, 'Share on LinkedIn')
+                ),
+                React.createElement('div', { id: 'qrcode', className: 'mt-4 mx-auto w-fit' })
+              )
+            )
+          )
         );
       };
 
@@ -266,6 +299,7 @@
         const [imagePreview, setImagePreview] = useState(null);
         const [cvFile, setCvFile] = useState(null);
         const [cvUrl, setCvUrl] = useState(null);
+        const [portfolioUrl, setPortfolioUrl] = useState(null);
         const [showPreview, setShowPreview] = useState(true);
         const [message, setMessage] = useState('');
         const [errors, setErrors] = useState({});
@@ -294,6 +328,18 @@
             }
           };
         }, [cvUrl]);
+
+        useEffect(() => {
+          if (portfolioUrl) {
+            QRCode.toCanvas(document.getElementById('qrcode'), portfolioUrl, { width: 200 }, (error) => {
+              if (error) {
+                console.error('QR code error:', error);
+                setMessage('Error generating QR code.');
+                setTimeout(() => setMessage(''), 2000);
+              }
+            });
+          }
+        }, [portfolioUrl]);
 
         const validateInput = (name, value) => {
           if (['name', 'profession', 'email'].includes(name) && (!value || value.trim().length < 2)) {
@@ -468,7 +514,7 @@
           return true;
         };
 
-        const handleSubmit = (e) => {
+        const handleSubmit = async (e) => {
           e.preventDefault();
           console.log('Submitting portfolio:', formData);
           const newErrors = {};
@@ -481,6 +527,8 @@
 
           if (Object.keys(newErrors).length === 0) {
             const data = new FormData();
+            data.append('type', 'portfolio');
+            data.append('user_email', formData.email);
             for (const key in formData) {
               if (Array.isArray(formData[key])) {
                 data.append(key, JSON.stringify(formData[key]));
@@ -492,10 +540,26 @@
             if (cvFile) data.append('cv', cvFile);
 
             try {
-              console.log('Portfolio submission successful');
-              alert('Portfolio submitted! Backend integration pending.');
-              setMessage('Portfolio submitted successfully!');
-              setTimeout(() => setMessage(''), 2000);
+              await fetch('/', {
+                method: 'POST',
+                body: data,
+              });
+
+              const response = await fetch('/.netlify/functions/generate', {
+                method: 'POST',
+                body: data,
+              });
+              const result = await response.json();
+              if (response.ok) {
+                console.log('Portfolio submission successful:', result);
+                setPortfolioUrl(result.url);
+                setMessage('Portfolio created successfully!');
+                setTimeout(() => setMessage(''), 2000);
+              } else {
+                console.error('Submission error:', result.error);
+                setMessage(`Error: ${result.error}`);
+                setTimeout(() => setMessage(''), 2000);
+              }
             } catch (error) {
               console.error('Submission error:', error.message);
               setMessage('Error submitting portfolio. Please try again.');
@@ -503,6 +567,8 @@
             }
           } else {
             console.log('Submission failed due to validation errors:', newErrors);
+            setMessage('Please fix the errors before submitting.');
+            setTimeout(() => setMessage(''), 2000);
           }
         };
 
@@ -519,6 +585,7 @@
             }
             setCvFile(null);
             setCvUrl(null);
+            setPortfolioUrl(null);
             setErrors({});
             setMessage('Form cleared!');
             setTimeout(() => setMessage(''), 2000);
@@ -528,207 +595,212 @@
         };
 
         console.log('Rendering PortfolioForm');
-        return (
-          <div className="container mx-auto px-4 py-8 max-w-6xl fade-in">
-            <a href="/index.html" className="text-blue-600 hover:underline mb-4 inline-block">Back to Home</a>
-            <h1 className="text-3xl font-poppins font-bold text-gray-800 mb-6">Create Your Portfolio</h1>
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="md:w-1/2">
-                {imagePreview && (
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Profile Image Preview</h3>
-                    <img src={imagePreview} alt="Profile Preview" className="w-32 h-32 rounded-full object-cover shadow-md image-preview" />
-                  </div>
-                )}
-                <form onSubmit={handleSubmit}>
-                  <FormInput
-                    id="name"
-                    name="name"
-                    label="Full Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    placeholder="John Doe"
-                    error={errors.name}
-                  />
-                  <FormInput
-                    id="profession"
-                    name="profession"
-                    label="Profession"
-                    value={formData.profession}
-                    onChange={handleChange}
-                    required
-                    placeholder="Software Developer"
-                    error={errors.profession}
-                  />
-                  <FormInput
-                    id="tagline"
-                    name="tagline"
-                    label="Tagline"
-                    value={formData.tagline}
-                    onChange={handleChange}
-                    placeholder="Building the future, one line of code at a time"
-                  />
-                  <FormTextarea
-                    id="summary"
-                    name="summary"
-                    label="Summary"
-                    value={formData.summary}
-                    onChange={handleChange}
-                    placeholder="Brief professional summary"
-                    maxLength={500}
-                    currentLength={formData.summary ? formData.summary.length : 0}
-                    error={errors.summary}
-                  />
-                  <FormTextarea
-                    id="about"
-                    name="about"
-                    label="About"
-                    value={formData.about}
-                    onChange={handleChange}
-                    placeholder="Tell us about yourself"
-                    maxLength={1000}
-                    currentLength={formData.about ? formData.about.length : 0}
-                    error={errors.about}
-                  />
-                  <FormInput
-                    id="email"
-                    name="email"
-                    label="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    type="email"
-                    placeholder="you@example.com"
-                    error={errors.email}
-                  />
-                  <FormInput
-                    id="phone"
-                    name="phone"
-                    label="Phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    type="tel"
-                    placeholder="123-456-7890"
-                    error={errors.phone}
-                  />
-                  <FormInput
-                    id="linkedin"
-                    name="linkedin"
-                    label="LinkedIn URL"
-                    value={formData.linkedin}
-                    onChange={handleChange}
-                    type="url"
-                    placeholder="https://linkedin.com/in/username"
-                    error={errors.linkedin}
-                  />
-                  <FileInput
-                    id="image-upload"
-                    label="Profile Image (JPEG/PNG, max 5MB)"
-                    accept="image/jpeg,image/png"
-                    onChange={(e) => handleFileChange(e, 'image')}
-                    error={message.includes('image') || message.includes('5MB') ? message : ''}
-                  />
-                  <FileInput
-                    id="cv-upload"
-                    label="Upload CV (PDF, max 10MB)"
-                    accept="application/pdf"
-                    onChange={(e) => handleFileChange(e, 'cv')}
-                    error={message.includes('PDF') || message.includes('10MB') ? message : ''}
-                  />
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Skills</label>
-                    {(formData.skills || []).map((skill, index) => (
-                      <SkillInput
-                        key={`skill-${index}`}
-                        index={index}
-                        skill={skill}
-                        onChange={handleSkillChange}
-                        onRemove={removeSkill}
-                      />
-                    ))}
-                    {errors.skills && <p className="text-red-500 text-sm mt-1">{errors.skills}</p>}
-                    <button
-                      type="button"
-                      onClick={addSkill}
-                      className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      aria-label="Add skill"
-                    >
-                      Add Skill
-                    </button>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Projects</label>
-                    {(formData.projects || []).map((project, index) => (
-                      <ProjectInput
-                        key={`project-${index}`}
-                        index={index}
-                        project={project}
-                        onChange={handleProjectChange}
-                        onRemove={removeProject}
-                      />
-                    ))}
-                    {errors.projects && <p className="text-red-500 text-sm mt-1">{errors.projects}</p>}
-                    <button
-                      type="button"
-                      onClick={addProject}
-                      className="bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      aria-label="Add project"
-                    >
-                      Add Project
-                    </button>
-                  </div>
-                  <div className="mb-4">
-                    <label htmlFor="template" className="block text-sm font-medium text-gray-700 mb-2">Template</label>
-                    <select
-                      id="template"
-                      name="template"
-                      value={formData.template || 'default'}
-                      onChange={handleChange}
-                      className="w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
-                    >
-                      <option value="default">Default</option>
-                      <option value="dark">Dark</option>
-                      <option value="vibrant">Vibrant</option>
-                    </select>
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400"
-                      aria-label="Create portfolio"
-                      disabled={Object.keys(errors).length > 0}
-                    >
-                      Create Portfolio
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleClear}
-                      className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                      aria-label="Clear form"
-                    >
-                      Clear Form
-                    </button>
-                  </div>
-                  {message && <p className={`mt-2 ${message.includes('Error') ? 'text-red-500' : 'text-green-600'}`}>{message}</p>}
-                </form>
-              </div>
-              <PortfolioPreview
-                formData={formData}
-                showPreview={showPreview}
-                togglePreview={() => setShowPreview(!showPreview)}
-                imagePreview={imagePreview}
-                cvFile={cvFile}
-                cvUrl={cvUrl}
-              />
-            </div>
-          </div>
+        return React.createElement('div', { className: 'container mx-auto px-4 py-8 max-w-6xl fade-in' },
+          React.createElement('a', {
+            href: '/index.html',
+            className: 'text-blue-600 hover:underline mb-4 inline-block'
+          }, 'Back to Home'),
+          React.createElement('h1', { className: 'text-3xl font-poppins font-bold text-gray-800 mb-6' }, 'Create Your Portfolio'),
+          React.createElement('div', { className: 'flex flex-col md:flex-row gap-8' },
+            React.createElement('div', { className: 'md:w-1/2' },
+              imagePreview && (
+                React.createElement('div', { className: 'mb-4' },
+                  React.createElement('h3', { className: 'text-sm font-medium text-gray-700 mb-2' }, 'Profile Image Preview'),
+                  React.createElement('img', {
+                    src: imagePreview,
+                    alt: 'Profile Preview',
+                    className: 'w-32 h-32 rounded-full object-cover shadow-md image-preview'
+                  })
+                )
+              ),
+              React.createElement('form', {
+                onSubmit: handleSubmit,
+                'data-netlify': 'true',
+                name: 'portfolio'
+              },
+                React.createElement('input', { type: 'hidden', name: 'form-name', value: 'portfolio' }),
+                React.createElement(FormInput, {
+                  id: 'name',
+                  name: 'name',
+                  label: 'Full Name',
+                  value: formData.name,
+                  onChange: handleChange,
+                  required: true,
+                  placeholder: 'John Doe',
+                  error: errors.name
+                }),
+                React.createElement(FormInput, {
+                  id: 'profession',
+                  name: 'profession',
+                  label: 'Profession',
+                  value: formData.profession,
+                  onChange: handleChange,
+                  required: true,
+                  placeholder: 'Software Developer',
+                  error: errors.profession
+                }),
+                React.createElement(FormInput, {
+                  id: 'tagline',
+                  name: 'tagline',
+                  label: 'Tagline',
+                  value: formData.tagline,
+                  onChange: handleChange,
+                  placeholder: 'Building the future, one line of code at a time'
+                }),
+                React.createElement(FormTextarea, {
+                  id: 'summary',
+                  name: 'summary',
+                  label: 'Summary',
+                  value: formData.summary,
+                  onChange: handleChange,
+                  placeholder: 'Brief professional summary',
+                  maxLength: 500,
+                  currentLength: formData.summary ? formData.summary.length : 0,
+                  error: errors.summary
+                }),
+                React.createElement(FormTextarea, {
+                  id: 'about',
+                  name: 'about',
+                  label: 'About',
+                  value: formData.about,
+                  onChange: handleChange,
+                  placeholder: 'Tell us about yourself',
+                  maxLength: 1000,
+                  currentLength: formData.about ? formData.about.length : 0,
+                  error: errors.about
+                }),
+                React.createElement(FormInput, {
+                  id: 'email',
+                  name: 'email',
+                  label: 'Email',
+                  value: formData.email,
+                  onChange: handleChange,
+                  required: true,
+                  type: 'email',
+                  placeholder: 'you@example.com',
+                  error: errors.email
+                }),
+                React.createElement(FormInput, {
+                  id: 'phone',
+                  name: 'phone',
+                  label: 'Phone',
+                  value: formData.phone,
+                  onChange: handleChange,
+                  type: 'tel',
+                  placeholder: '123-456-7890',
+                  error: errors.phone
+                }),
+                React.createElement(FormInput, {
+                  id: 'linkedin',
+                  name: 'linkedin',
+                  label: 'LinkedIn URL',
+                  value: formData.linkedin,
+                  onChange: handleChange,
+                  type: 'url',
+                  placeholder: 'https://linkedin.com/in/username',
+                  error: errors.linkedin
+                }),
+                React.createElement(FileInput, {
+                  id: 'image-upload',
+                  label: 'Profile Image (JPEG/PNG, max 5MB)',
+                  accept: 'image/jpeg,image/png',
+                  onChange: (e) => handleFileChange(e, 'image'),
+                  error: message.includes('image') || message.includes('5MB') ? message : ''
+                }),
+                React.createElement(FileInput, {
+                  id: 'cv-upload',
+                  label: 'Upload CV (PDF, max 10MB)',
+                  accept: 'application/pdf',
+                  onChange: (e) => handleFileChange(e, 'cv'),
+                  error: message.includes('PDF') || message.includes('10MB') ? message : ''
+                }),
+                React.createElement('div', { className: 'mb-4' },
+                  React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Skills'),
+                  (formData.skills || []).map((skill, index) => (
+                    React.createElement(SkillInput, {
+                      key: `skill-${index}`,
+                      index,
+                      skill,
+                      onChange: handleSkillChange,
+                      onRemove: removeSkill
+                    })
+                  )),
+                  errors.skills && React.createElement('p', { className: 'text-red-500 text-sm mt-1' }, errors.skills),
+                  React.createElement('button', {
+                    type: 'button',
+                    onClick: addSkill,
+                    className: 'bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500',
+                    'aria-label': 'Add skill'
+                  }, 'Add Skill')
+                ),
+                React.createElement('div', { className: 'mb-4' },
+                  React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Projects'),
+                  (formData.projects || []).map((project, index) => (
+                    React.createElement(ProjectInput, {
+                      key: `project-${index}`,
+                      index,
+                      project,
+                      onChange: handleProjectChange,
+                      onRemove: removeProject
+                    })
+                  )),
+                  errors.projects && React.createElement('p', { className: 'text-red-500 text-sm mt-1' }, errors.projects),
+                  React.createElement('button', {
+                    type: 'button',
+                    onClick: addProject,
+                    className: 'bg-green-500 text-white px-3 py-1 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500',
+                    'aria-label': 'Add project'
+                  }, 'Add Project')
+                ),
+                React.createElement('div', { className: 'mb-4' },
+                  React.createElement('label', { htmlFor: 'template', className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Template'),
+                  React.createElement('select', {
+                    id: 'template',
+                    name: 'template',
+                    value: formData.template || 'default',
+                    onChange: handleChange,
+                    className: 'w-full rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50'
+                  },
+                    React.createElement('option', { value: 'default' }, 'Default'),
+                    React.createElement('option', { value: 'dark' }, 'Dark'),
+                    React.createElement('option', { value: 'vibrant' }, 'Vibrant')
+                  )
+                ),
+                React.createElement('div', { className: 'flex gap-4' },
+                  React.createElement('button', {
+                    type: 'submit',
+                    className: 'bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400',
+                    'aria-label': 'Create portfolio',
+                    disabled: Object.keys(errors).length > 0
+                  }, 'Create Portfolio'),
+                  React.createElement('button', {
+                    type: 'button',
+                    onClick: handleClear,
+                    className: 'bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500',
+                    'aria-label': 'Clear form'
+                  }, 'Clear Form')
+                ),
+                message && React.createElement('p', {
+                  className: `mt-2 ${message.includes('Error') ? 'text-red-500' : 'text-green-600'}`
+                }, message)
+              )
+            ),
+            React.createElement(PortfolioPreview, {
+              formData,
+              showPreview,
+              togglePreview: () => setShowPreview(!showPreview),
+              imagePreview,
+              cvFile,
+              cvUrl,
+              portfolioUrl
+            })
+          )
         );
       };
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
       console.log('Rendering PortfolioForm...');
-      root.render(<PortfolioForm />);
+      root.render(React.createElement(PortfolioForm));
     } catch (error) {
       console.error('Error in portfolio.html:', error.message, error.stack);
       document.getElementById('error').classList.add('error');
