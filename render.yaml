@@ -10,14 +10,14 @@ services:
       - key: PORT
         value: 3000
       - key: FRONTEND_URL
-        value: https://<your-netlify-domain>.netlify.app
+        value: https://theidealcareerprogenerator.netlify.app
       - key: SUPABASE_URL
         fromSecret: SUPABASE_URL
       - key: SUPABASE_KEY
         fromSecret: SUPABASE_KEY
-      - key: GITHUB_TOKEN
-        fromSecret: GITHUB_TOKEN
-      - key: GITHUB_OWNER
-        value: <your-github-username>
-      - key: GITHUB_REPO
-        value: eportfolio-files
+      - key: GH_TOKEN
+        fromSecret: GH_TOKEN
+      - key: GH_OWNER
+        value: Theidealcareerpro
+      - key: GH_REPO
+        value: e-portfolioGeneratorNEW
