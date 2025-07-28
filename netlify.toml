@@ -1,8 +1,8 @@
 [build]
   base = "frontend"
-  publish = "frontend"
+  publish = "."
   command = ""
-  functions = "functions"
+  functions = "../functions"
 
 [[headers]]
   for = "/*"
@@ -13,8 +13,8 @@
       style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline';
       font-src https://fonts.gstatic.com;
       img-src 'self' data:;
-      connect-src 'self' https://theidealcareerprogenerator.onrender.com/.netlify/functions/submit-feedback;
-      form-action 'self' https://theidealcareerprogenerator.onrender.com/.netlify/functions/submit-feedback;
+      connect-src 'self' https://portfolio-generator-backend.onrender.com /.netlify/functions/submit-feedback;
+      form-action 'self' https://portfolio-generator-backend.onrender.com /.netlify/functions/submit-feedback;
     """
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
