@@ -16,7 +16,7 @@
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
-    .error .error-message { display: block; }
+    .error-message.error { display: block; }
     .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; }
     .loading-overlay.active { display: flex; justify-content: center; align-items: center; }
     .spinner { border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
@@ -87,11 +87,11 @@
 </head>
 <body class="antialiased">
   <div id="root"></div>
-  <div id="error" className="error-message">
-    <p>Something went wrong. Please refresh the page or contact support.</p>
+  <div id="error" class="error-message">
+    <p id="error-text">Something went wrong. Please refresh the page or contact support.</p>
   </div>
-  <div id="loading" className="loading-overlay">
-    <div className="spinner"></div>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
   </div>
   <script type="text/javascript">
     try {
@@ -109,14 +109,9 @@
             React.createElement(
               "nav",
               { className: "space-x-6", role: "navigation" },
-              React.createElement("a", { href: "/index.html#features", className: "hover:text-yellow-400 transition" }, "Features"),
-              React.createElement("a", { href: "/index.html#how-it-works", className: "hover:text-yellow-400 transition" }, "How It Works"),
-              React.createElement("a", { href: "/index.html#faq", className: "hover:text-yellow-400 transition" }, "FAQ"),
-              React.createElement(
-                "a",
-                { href: "/index.html#feedback", className: "bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition" },
-                "Feedback"
-              )
+              React.createElement("a", { href: "index.html", className: "hover:text-yellow-400 transition" }, "Home"),
+              React.createElement("a", { href: "portfolio.html", className: "hover:text-yellow-400 transition" }, "Portfolio"),
+              React.createElement("a", { href: "coverletter.html", className: "hover:text-yellow-400 transition" }, "Cover Letter")
             )
           )
         );
@@ -136,9 +131,9 @@
             " | ",
             React.createElement("span", null, formData.email || "Email"),
             " | ",
-            React.createElement("a", { href: formData.linkedin || "#" }, formData.linkedin ? "LinkedIn" : "LinkedIn"),
+            React.createElement("a", { href: formData.linkedin || "#", target: "_blank", rel: "noopener noreferrer" }, formData.linkedin ? "LinkedIn" : "LinkedIn"),
             " | ",
-            React.createElement("a", { href: formData.portfolio || "#" }, formData.portfolio ? "E-portfolio" : "E-portfolio")
+            React.createElement("a", { href: formData.portfolio || "#", target: "_blank", rel: "noopener noreferrer" }, formData.portfolio ? "E-portfolio" : "E-portfolio")
           ),
           React.createElement(
             "div",
@@ -236,7 +231,7 @@
             "div",
             { className: "section" },
             React.createElement("h2", null, "Professional Project Experience"),
-            React.createElement("p", null, "Please see E-portfolio: ", React.createElement("a", { href: formData.portfolio || "#" }, formData.portfolio || "Portfolio"))
+            React.createElement("p", null, "Please see E-portfolio: ", React.createElement("a", { href: formData.portfolio || "#", target: "_blank", rel: "noopener noreferrer" }, formData.portfolio || "Portfolio"))
           )
         );
       };
@@ -518,10 +513,11 @@
               doc.save('cv.pdf');
             } else {
               const errorData = await response.json();
-              setMessage(`Oops! Something went wrong: ${errorData.message || 'Please try again.'}`);
+              setMessage(`Error: ${errorData.message || 'Failed to save CV. Please try again.'}`);
             }
           } catch (error) {
-            setMessage('Sorry, we couldn’t connect to the server. Please check your internet and try again.');
+            setMessage(`Error: Could not connect to the server. Details: ${error.message}`);
+            console.error('CV submission error:', error.message, error.stack);
           } finally {
             setIsLoading(false);
             document.getElementById('loading').classList.remove('active');
@@ -1049,7 +1045,9 @@
       root.render(React.createElement(App, null));
     } catch (error) {
       console.error('Error in cv.html:', error.message, error.stack);
-      document.getElementById('error').classList.add('error');
+      const errorDiv = document.getElementById('error');
+      errorDiv.className = 'error-message error';
+      document.getElementById('error-text').innerText = `Error: ${error.message} (Check console for details)`;
     }
   </script>
 </body>
