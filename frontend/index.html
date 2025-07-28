@@ -26,7 +26,7 @@
 <body class="antialiased">
   <div id="root"></div>
   <div id="error" class="error-message">
-    <p>Something went wrong. Please refresh the page or contact support.</p>
+    <p id="error-text">Something went wrong. Please refresh the page or contact support.</p>
   </div>
   <div id="loading" class="loading-overlay">
     <div class="spinner"></div>
@@ -425,7 +425,9 @@
       root.render(React.createElement(App, null));
     } catch (error) {
       console.error('Error in index.html:', error.message, error.stack);
-      document.getElementById('error').className = 'error-message error';
+      const errorDiv = document.getElementById('error');
+      errorDiv.className = 'error-message error';
+      document.getElementById('error-text').innerText = `Error: ${error.message} (Check console for details)`;
     }
   </script>
 </body>
