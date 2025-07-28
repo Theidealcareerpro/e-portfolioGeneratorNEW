@@ -47,11 +47,6 @@
   status = 200
 
 [[redirects]]
-  from = "/api/submit-feedback"
-  to = "/.netlify/functions/submit-feedback"
-  status = 200
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
