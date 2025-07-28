@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: Call Cleanup API
         env:
-          API_URL: https://<your-render-domain>.onrender.com/api/cleanup
+          API_URL: https://theidealcareerprogenerator.onrender.com/api/cleanup
         run: |
           curl -X POST $API_URL
