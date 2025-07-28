@@ -12,6 +12,8 @@
     body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
+    .error-message.error { display: block; }
   </style>
 </head>
 <body class="antialiased">
@@ -28,8 +30,53 @@
   <section class="py-16 bg-white fade-in">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <h2 class="text-3xl font-poppins font-bold text-gray-800 mb-8 text-center">Create Your ATS-Friendly CV</h2>
-      <p class="text-lg text-gray-600 text-center">Static test page for cv.html. Form functionality will be added later.</p>
+      <form id="cv-form" class="bg-gray-100 p-6 sm:p-8 rounded-xl shadow-lg">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+            <input id="name" type="text" name="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input id="email" type="email" name="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50">
+          </div>
+        </div>
+        <div class="mt-8">
+          <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Test Submit</button>
+        </div>
+      </form>
+      <div id="error" class="error-message">
+        <p id="error-text"></p>
+      </div>
     </div>
   </section>
+  <script>
+    document.getElementById('cv-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorDiv = document.getElementById('error');
+      const errorText = document.getElementById('error-text');
+      try {
+        const formData = new FormData(e.target);
+        const response = await fetch('https://theidealcareerprogenerator.onrender.com/api/generate-cv', {
+          method: 'POST',
+          body: formData,
+        });
+        if (response.ok) {
+          const result = await response.json();
+          errorText.textContent = `Success: ${result.message || 'CV submitted!'}`;
+          errorDiv.className = 'error-message text-green-600';
+          errorDiv.style.display = 'block';
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'API error');
+        }
+      } catch (error) {
+        console.error('Form submission error:', error.message);
+        errorText.textContent = `Error: ${error.message}`;
+        errorDiv.className = 'error-message error';
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 </html>
