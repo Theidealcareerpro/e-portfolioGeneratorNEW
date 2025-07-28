@@ -3,22 +3,161 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Thank you for your feedback - ePortfolio Generator">
+  <meta name="description" content="Thank you for your feedback on ePortfolio Generator.">
   <meta name="robots" content="noindex">
   <title>Feedback Submitted - ePortfolio Generator</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <style>
-    body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+    body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
+    .error .error-message { display: block; }
   </style>
 </head>
 <body class="antialiased">
-  <div class="container mx-auto px-4 py-8 max-w-6xl fade-in">
-    <h1 class="text-3xl font-poppins font-bold text-gray-800 mb-6">Thank You!</h1>
-    <p class="text-lg text-gray-600 mb-4">Your feedback has been successfully submitted. We appreciate your input!</p>
-    <a href="/index.html" class="text-blue-600 hover:underline">Back to Home</a>
+  <div id="root"></div>
+  <div id="error" class="error-message">
+    <p>Something went wrong. Please refresh the page or contact support.</p>
   </div>
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const { createElement } = React;
+        const { createRoot } = ReactDOM;
+
+        const Header = () => {
+          return createElement(
+            "header",
+            { className: "bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in", role: "banner" },
+            createElement(
+              "div",
+              { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center" },
+              createElement("h1", { className: "text-3xl font-poppins font-bold" }, "ePortfolio Generator"),
+              createElement(
+                "nav",
+                { className: "space-x-6", role: "navigation" },
+                createElement("a", { href: "index.html#features", className: "hover:text-yellow-400 transition" }, "Features"),
+                createElement("a", { href: "index.html#how-it-works", className: "hover:text-yellow-400 transition" }, "How It Works"),
+                createElement("a", { href: "index.html#faq", className: "hover:text-yellow-400 transition" }, "FAQ"),
+                createElement(
+                  "a",
+                  { href: "index.html#feedback", className: "bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition" },
+                  "Feedback"
+                )
+              )
+            )
+          );
+        };
+
+        const SuccessMessage = () => {
+          return createElement(
+            "section",
+            { className: "py-20 bg-white fade-in text-center", role: "region", "aria-labelledby": "success-heading" },
+            createElement(
+              "div",
+              { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" },
+              createElement("h2", { id: "success-heading", className: "text-3xl font-poppins font-bold text-gray-800 mb-4" }, "Thank You for Your Feedback!"),
+              createElement("p", { className: "text-lg text-gray-600 mb-8" }, "We appreciate your input. It helps us improve ePortfolio Generator for everyone."),
+              createElement(
+                "div",
+                { className: "flex flex-col sm:flex-row justify-center gap-4" },
+                createElement(
+                  "a",
+                  { href: "index.html", className: "bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition" },
+                  "Back to Home"
+                ),
+                createElement(
+                  "a",
+                  { href: "cv.html", className: "bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" },
+                  "Create CV"
+                ),
+                createElement(
+                  "a",
+                  { href: "coverletter.html", className: "bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition" },
+                  "Create Cover Letter"
+                ),
+                createElement(
+                  "a",
+                  { href: "portfolio.html", className: "bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition" },
+                  "Create Portfolio"
+                )
+              )
+            )
+          );
+        };
+
+        const Footer = () => {
+          return createElement(
+            "footer",
+            { className: "bg-gray-800 text-white py-8 fade-in", role: "contentinfo" },
+            createElement(
+              "div",
+              { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+              createElement(
+                "div",
+                { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" },
+                createElement(
+                  "div",
+                  null,
+                  createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "ePortfolio Generator"),
+                  createElement("p", { className: "text-gray-400" }, "Build ATS-friendly CVs, cover letters, and portfolios to boost your career.")
+                ),
+                createElement(
+                  "div",
+                  null,
+                  createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "Quick Links"),
+                  createElement(
+                    "ul",
+                    { className: "space-y-2" },
+                    createElement("li", null, createElement("a", { href: "index.html", className: "text-gray-400 hover:text-yellow-400 transition" }, "Home")),
+                    createElement("li", null, createElement("a", { href: "index.html#features", className: "text-gray-400 hover:text-yellow-400 transition" }, "Features")),
+                    createElement("li", null, createElement("a", { href: "index.html#faq", className: "text-gray-400 hover:text-yellow-400 transition" }, "FAQ")),
+                    createElement("li", null, createElement("a", { href: "index.html#feedback", className: "text-gray-400 hover:text-yellow-400 transition" }, "Feedback"))
+                  )
+                ),
+                createElement(
+                  "div",
+                  null,
+                  createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "Connect"),
+                  createElement(
+                    "ul",
+                    { className: "space-y-2" },
+                    createElement("li", null, createElement("a", { href: "https://github.com/Theidealcareerpro", target: "_blank", rel: "noopener noreferrer", className: "text-gray-400 hover:text-yellow-400 transition" }, "GitHub")),
+                    createElement("li", null, createElement("a", { href: "mailto:theidealcareerpro@gmail.com", className: "text-gray-400 hover:text-yellow-400 transition" }, "Contact Us")),
+                    createElement("li", null, createElement("a", { href: "https://www.buymeacoffee.com/theidealcag", target: "_blank", rel: "noopener noreferrer", className: "text-gray-400 hover:text-yellow-400 transition" }, "Buy Me a Coffee"))
+                  )
+                )
+              ),
+              createElement(
+                "div",
+                { className: "mt-8 text-center text-gray-400" },
+                createElement("p", null, `© ${new Date().getFullYear()} ePortfolio Generator. All rights reserved.`)
+              )
+            )
+          );
+        };
+
+        const App = () => {
+          return createElement(
+            "div",
+            null,
+            createElement(Header, null),
+            createElement(SuccessMessage, null),
+            createElement(Footer, null)
+          );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(createElement(App, null));
+      } catch (error) {
+        console.error('Error in feedback-success.html:', error.message, error.stack);
+        document.getElementById('error').className = 'error-message error';
+      }
+    });
+  </script>
 </body>
 </html>
