@@ -8,6 +8,7 @@
   [headers.values]
     Content-Security-Policy = """
       default-src 'self';
+      script-src 'self' 'sha256-<COMPUTE_HASH>';
       style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline';
       font-src https://fonts.gstatic.com;
       img-src 'self' data:;
