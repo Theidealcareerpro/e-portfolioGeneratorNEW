@@ -9,64 +9,424 @@
   <title>The Ideal Career Pro Generator - Build Your Professional Profile</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <style>
     body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
     .fade-in { animation: fadeIn 1s ease-in; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .error-message { display: none; color: #dc2626; text-align: center; padding: 1rem; }
+    .error-message.error { display: block; }
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; }
+    .loading-overlay.active { display: flex; justify-content: center; align-items: center; }
+    .spinner { border: 4px solid #f3f4f6; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="antialiased">
-  <header class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-      <h1 class="text-3xl font-poppins font-bold">ePortfolio Generator</h1>
-      <nav class="space-x-6">
-        <a href="#features" class="hover:text-yellow-400 transition">Features</a>
-        <a href="#how-it-works" class="hover:text-yellow-400 transition">How It Works</a>
-        <a href="#faq" class="hover:text-yellow-400 transition">FAQ</a>
-        <a href="#feedback" class="bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition">Feedback</a>
-      </nav>
-    </div>
-  </header>
-  <section class="py-20 bg-gradient-to-b from-blue-100 to-white text-center fade-in">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-4xl sm:text-5xl font-poppins font-bold text-gray-800 mb-4">Build Your Professional ePortfolio</h2>
-      <p class="text-lg text-gray-600 mb-8">Create ATS-friendly CVs, cover letters, and portfolios to stand out in your job search.</p>
-      <div class="flex flex-col sm:flex-row justify-center gap-4">
-        <a href="cv.html" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Create CV</a>
-        <a href="coverletter.html" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">Create Cover Letter</a>
-        <a href="portfolio.html" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">Create Portfolio</a>
-      </div>
-    </div>
-  </section>
-  <footer class="bg-gray-800 text-white py-8 fade-in">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div>
-          <h3 class="text-lg font-poppins font-semibold mb-4">ePortfolio Generator</h3>
-          <p class="text-gray-400">Build ATS-friendly CVs, cover letters, and portfolios to boost your career.</p>
-        </div>
-        <div>
-          <h3 class="text-lg font-poppins font-semibold mb-4">Quick Links</h3>
-          <ul class="space-y-2">
-            <li><a href="index.html" class="text-gray-400 hover:text-yellow-400 transition">Home</a></li>
-            <li><a href="#features" class="text-gray-400 hover:text-yellow-400 transition">Features</a></li>
-            <li><a href="#faq" class="text-gray-400 hover:text-yellow-400 transition">FAQ</a></li>
-            <li><a href="#feedback" class="text-gray-400 hover:text-yellow-400 transition">Feedback</a></li>
-          </ul>
-        </div>
-        <div>
-          <h3 class="text-lg font-poppins font-semibold mb-4">Connect</h3>
-          <ul class="space-y-2">
-            <li><a href="https://github.com/Theidealcareerpro" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-yellow-400 transition">GitHub</a></li>
-            <li><a href="mailto:theidealcareerpro@gmail.com" class="text-gray-400 hover:text-yellow-400 transition">Contact Us</a></li>
-            <li><a href="https://www.buymeacoffee.com/theidealcag" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-yellow-400 transition">Buy Me a Coffee</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="mt-8 text-center text-gray-400">
-        <p>© 2025 ePortfolio Generator. All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
+  <div id="root"></div>
+  <div id="error" class="error-message">
+    <p>Something went wrong. Please refresh the page or contact support.</p>
+  </div>
+  <div id="loading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+  <script type="text/javascript">
+    try {
+      const { useState, useCallback, useRef } = React;
+
+      const Header = () => {
+        return React.createElement(
+          "header",
+          { className: "bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in", role: "banner" },
+          React.createElement(
+            "div",
+            { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center" },
+            React.createElement("h1", { className: "text-3xl font-poppins font-bold" }, "ePortfolio Generator"),
+            React.createElement(
+              "nav",
+              { className: "space-x-6", role: "navigation" },
+              React.createElement("a", { href: "#features", className: "hover:text-yellow-400 transition" }, "Features"),
+              React.createElement("a", { href: "#how-it-works", className: "hover:text-yellow-400 transition" }, "How It Works"),
+              React.createElement("a", { href: "#faq", className: "hover:text-yellow-400 transition" }, "FAQ"),
+              React.createElement(
+                "a",
+                { href: "#feedback", className: "bg-yellow-400 text-gray-900 py-2 px-4 rounded-full font-semibold hover:bg-yellow-500 transition" },
+                "Feedback"
+              )
+            )
+          )
+        );
+      };
+
+      const Hero = () => {
+        return React.createElement(
+          "section",
+          { className: "py-20 bg-gradient-to-b from-blue-100 to-white text-center fade-in" },
+          React.createElement(
+            "div",
+            { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement("h2", { className: "text-4xl sm:text-5xl font-poppins font-bold text-gray-800 mb-4" }, "Build Your Professional ePortfolio"),
+            React.createElement("p", { className: "text-lg text-gray-600 mb-8" }, "Create ATS-friendly CVs, cover letters, and portfolios to stand out in your job search."),
+            React.createElement(
+              "div",
+              { className: "flex flex-col sm:flex-row justify-center gap-4" },
+              React.createElement(
+                "a",
+                { href: "cv.html", className: "bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition" },
+                "Create CV"
+              ),
+              React.createElement(
+                "a",
+                { href: "coverletter.html", className: "bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" },
+                "Create Cover Letter"
+              ),
+              React.createElement(
+                "a",
+                { href: "portfolio.html", className: "bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition" },
+                "Create Portfolio"
+              )
+            )
+          )
+        );
+      };
+
+      const Features = () => {
+        return React.createElement(
+          "section",
+          { id: "features", className: "py-16 bg-white fade-in" },
+          React.createElement(
+            "div",
+            { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement("h2", { className: "text-3xl font-poppins font-bold text-gray-800 text-center mb-12" }, "Why Choose ePortfolio Generator?"),
+            React.createElement(
+              "div",
+              { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" },
+              React.createElement(
+                "div",
+                { className: "bg-gray-100 p-6 rounded-lg shadow-md text-center" },
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "ATS-Friendly CVs"),
+                React.createElement("p", { className: "text-gray-600" }, "Generate CVs optimized for Applicant Tracking Systems to boost your chances.")
+              ),
+              React.createElement(
+                "div",
+                { className: "bg-gray-100 p-6 rounded-lg shadow-md text-center" },
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "Professional Cover Letters"),
+                React.createElement("p", { className: "text-gray-600" }, "Craft tailored cover letters that make a strong first impression.")
+              ),
+              React.createElement(
+                "div",
+                { className: "bg-gray-100 p-6 rounded-lg shadow-md text-center" },
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "Dynamic Portfolios"),
+                React.createElement("p", { className: "text-gray-600" }, "Showcase your projects and skills with a professional ePortfolio.")
+              )
+            )
+          )
+        );
+      };
+
+      const HowItWorks = () => {
+        return React.createElement(
+          "section",
+          { id: "how-it-works", className: "py-16 bg-gray-100 fade-in" },
+          React.createElement(
+            "div",
+            { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement("h2", { className: "text-3xl font-poppins font-bold text-gray-800 text-center mb-12" }, "How It Works"),
+            React.createElement(
+              "div",
+              { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" },
+              React.createElement(
+                "div",
+                { className: "text-center" },
+                React.createElement("div", { className: "text-4xl font-bold text-blue-600 mb-4" }, "1"),
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "Fill Out Forms"),
+                React.createElement("p", { className: "text-gray-600" }, "Enter your details in our user-friendly forms for CVs, cover letters, or portfolios.")
+              ),
+              React.createElement(
+                "div",
+                { className: "text-center" },
+                React.createElement("div", { className: "text-4xl font-bold text-blue-600 mb-4" }, "2"),
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "Generate & Preview"),
+                React.createElement("p", { className: "text-gray-600" }, "See a live preview and download professional PDFs instantly.")
+              ),
+              React.createElement(
+                "div",
+                { className: "text-center" },
+                React.createElement("div", { className: "text-4xl font-bold text-blue-600 mb-4" }, "3"),
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-2" }, "Save & Share"),
+                React.createElement("p", { className: "text-gray-600" }, "Save your documents to GitHub and share them with employers.")
+              )
+            )
+          )
+        );
+      };
+
+      const FAQ = () => {
+        return React.createElement(
+          "section",
+          { id: "faq", className: "py-16 bg-white fade-in" },
+          React.createElement(
+            "div",
+            { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement("h2", { className: "text-3xl font-poppins font-bold text-gray-800 text-center mb-12" }, "Frequently Asked Questions"),
+            React.createElement(
+              "div",
+              { className: "space-y-6" },
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800" }, "What is ePortfolio Generator?"),
+                React.createElement("p", { className: "text-gray-600" }, "It’s a tool to create ATS-friendly CVs, cover letters, and portfolios, stored securely on GitHub.")
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800" }, "How do I save my documents?"),
+                React.createElement("p", { className: "text-gray-600" }, "After creating your CV, cover letter, or portfolio, our system saves them to your GitHub account.")
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-xl font-semibold text-gray-800" }, "Is it free to use?"),
+                React.createElement("p", { className: "text-gray-600" }, "Yes, ePortfolio Generator is free for all users to create and save professional documents.")
+              )
+            )
+          )
+        );
+      };
+
+      const BuyMeACoffee = () => {
+        return React.createElement(
+          "section",
+          { id: "support", className: "py-16 bg-gray-100 fade-in", role: "region", "aria-labelledby": "support-heading" },
+          React.createElement(
+            "div",
+            { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center" },
+            React.createElement("h2", { id: "support-heading", className: "text-3xl font-poppins font-bold text-gray-800 mb-4" }, "Support This Project"),
+            React.createElement("p", { className: "text-lg text-gray-600 mb-8" }, "Love ePortfolio Generator? Help keep it running by buying me a coffee!"),
+            React.createElement(
+              "a",
+              {
+                href: "https://www.buymeacoffee.com/theidealcag",
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "bg-yellow-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition",
+                "aria-label": "Support ePortfolio Generator on BuyMeACoffee"
+              },
+              "Buy Me a Coffee"
+            )
+          )
+        );
+      };
+
+      const FeedbackForm = () => {
+        const [formData, setFormData] = useState({
+          message: ''
+        });
+        const [errors, setErrors] = useState({});
+        const [message, setMessage] = useState('');
+        const [isLoading, setIsLoading] = useState(false);
+        const formRef = useRef(null);
+
+        const validateForm = () => {
+          const newErrors = {};
+          if (!formData.message) newErrors.message = 'Please provide your feedback.';
+          if (formData.message.length > 1000) newErrors.message = 'Feedback is too long (max 1000 characters).';
+          setErrors(newErrors);
+          return Object.keys(newErrors).length === 0;
+        };
+
+        const handleInputChange = (e) => {
+          const { name, value } = e.target;
+          setFormData((prev) => ({ ...prev, [name]: value }));
+          setErrors((prev) => ({ ...prev, [name]: '' }));
+        };
+
+        const handleSubmit = useCallback(async (e) => {
+          e.preventDefault();
+          if (!validateForm()) {
+            setMessage('Please fill out all required fields correctly.');
+            formRef.current.scrollIntoView({ behavior: 'smooth' });
+            return;
+          }
+          setIsLoading(true);
+          document.getElementById('loading').classList.add('active');
+          setMessage('Submitting your feedback...');
+          try {
+            const response = await fetch('/api/submit-feedback', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams(formData).toString()
+            });
+            if (response.ok) {
+              setMessage('Thank you for your feedback! Redirecting to success page...');
+              setFormData({ message: '' });
+              setTimeout(() => {
+                window.location.href = 'feedback-success.html';
+              }, 2000);
+            } else {
+              const errorData = await response.json();
+              setMessage(`Oops! Something went wrong: ${errorData.message || 'Please try again.'}`);
+            }
+          } catch (error) {
+            setMessage('Sorry, we couldn’t connect to the server. Please check your internet and try again.');
+            console.error('Feedback submission error:', error.message, error.stack);
+          } finally {
+            setIsLoading(false);
+            document.getElementById('loading').classList.remove('active');
+            setTimeout(() => setMessage(''), 5000);
+          }
+        }, [formData]);
+
+        return React.createElement(
+          "section",
+          { id: "feedback", className: "py-16 bg-white fade-in", role: "region", "aria-labelledby": "feedback-form-heading" },
+          React.createElement(
+            "div",
+            { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement("h2", { id: "feedback-form-heading", className: "text-3xl font-poppins font-bold text-gray-800 mb-8 text-center" }, "We Value Your Feedback"),
+            React.createElement(
+              "form",
+              { ref: formRef, onSubmit: handleSubmit, className: "bg-white p-6 sm:p-8 rounded-xl shadow-lg", role: "form", "aria-labelledby": "feedback-form-title" },
+              React.createElement("h3", { id: "feedback-form-title", className: "sr-only" }, "Feedback Form"),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("label", { htmlFor: "message", className: "block text-sm font-medium text-gray-700" }, "Your Feedback"),
+                React.createElement("textarea", {
+                  id: "message",
+                  name: "message",
+                  value: formData.message,
+                  onChange: handleInputChange,
+                  className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                  rows: "5",
+                  maxLength: "1000",
+                  required: true,
+                  "aria-required": "true",
+                  "aria-invalid": errors.message ? 'true' : 'false',
+                  "aria-describedby": errors.message ? 'message-error' : 'message-desc'
+                }),
+                React.createElement("p", { id: "message-desc", className: "text-sm text-gray-500 mt-1" }, "Share your thoughts to help us improve (max 1000 chars)."),
+                errors.message && React.createElement("p", { id: "message-error", className: "text-sm text-red-600 mt-1" }, errors.message)
+              ),
+              React.createElement(
+                "div",
+                { className: "mt-8 flex flex-col sm:flex-row gap-4" },
+                React.createElement(
+                  "button",
+                  {
+                    type: "submit",
+                    className: `bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed`,
+                    disabled: isLoading || Object.keys(errors).length > 0,
+                    "aria-label": "Submit feedback",
+                    "aria-disabled": isLoading
+                  },
+                  isLoading ? 'Submitting...' : 'Submit Feedback'
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => {
+                      setFormData({ message: '' });
+                      setErrors({});
+                      setMessage('Form cleared successfully!');
+                      setTimeout(() => setMessage(''), 3000);
+                    },
+                    className: "bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500",
+                    "aria-label": "Clear form",
+                    disabled: isLoading
+                  },
+                  "Clear Form"
+                )
+              ),
+              message &&
+                React.createElement(
+                  "p",
+                  {
+                    className: `mt-4 text-center text-sm ${message.includes('Error') || message.includes('Oops') || message.includes('Sorry') ? 'text-red-600' : 'text-green-600'}`,
+                    "aria-live": "polite"
+                  },
+                  message
+                )
+            )
+          )
+        );
+      };
+
+      const Footer = () => {
+        return React.createElement(
+          "footer",
+          { className: "bg-gray-800 text-white py-8 fade-in", role: "contentinfo" },
+          React.createElement(
+            "div",
+            { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+            React.createElement(
+              "div",
+              { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" },
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "ePortfolio Generator"),
+                React.createElement("p", { className: "text-gray-400" }, "Build ATS-friendly CVs, cover letters, and portfolios to boost your career.")
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "Quick Links"),
+                React.createElement(
+                  "ul",
+                  { className: "space-y-2" },
+                  React.createElement("li", null, React.createElement("a", { href: "index.html", className: "text-gray-400 hover:text-yellow-400 transition" }, "Home")),
+                  React.createElement("li", null, React.createElement("a", { href: "#features", className: "text-gray-400 hover:text-yellow-400 transition" }, "Features")),
+                  React.createElement("li", null, React.createElement("a", { href: "#faq", className: "text-gray-400 hover:text-yellow-400 transition" }, "FAQ")),
+                  React.createElement("li", null, React.createElement("a", { href: "#feedback", className: "text-gray-400 hover:text-yellow-400 transition" }, "Feedback"))
+                )
+              ),
+              React.createElement(
+                "div",
+                null,
+                React.createElement("h3", { className: "text-lg font-poppins font-semibold mb-4" }, "Connect"),
+                React.createElement(
+                  "ul",
+                  { className: "space-y-2" },
+                  React.createElement("li", null, React.createElement("a", { href: "https://github.com/Theidealcareerpro", target: "_blank", rel: "noopener noreferrer", className: "text-gray-400 hover:text-yellow-400 transition" }, "GitHub")),
+                  React.createElement("li", null, React.createElement("a", { href: "mailto:theidealcareerpro@gmail.com", className: "text-gray-400 hover:text-yellow-400 transition" }, "Contact Us")),
+                  React.createElement("li", null, React.createElement("a", { href: "https://www.buymeacoffee.com/theidealcag", target: "_blank", rel: "noopener noreferrer", className: "text-gray-400 hover:text-yellow-400 transition" }, "Buy Me a Coffee"))
+                )
+              )
+            ),
+            React.createElement(
+              "div",
+              { className: "mt-8 text-center text-gray-400" },
+              React.createElement("p", null, `© ${new Date().getFullYear()} ePortfolio Generator. All rights reserved.`)
+            )
+          )
+        );
+      };
+
+      const App = () => {
+        return React.createElement(
+          "div",
+          null,
+          React.createElement(Header, null),
+          React.createElement(Hero, null),
+          React.createElement(Features, null),
+          React.createElement(HowItWorks, null),
+          React.createElement(FAQ, null),
+          React.createElement(BuyMeACoffee, null),
+          React.createElement(FeedbackForm, null),
+          React.createElement(Footer, null)
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(App, null));
+    } catch (error) {
+      console.error('Error in index.html:', error.message, error.stack);
+      document.getElementById('error').className = 'error-message error';
+    }
+  </script>
 </body>
 </html>
