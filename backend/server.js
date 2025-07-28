@@ -13,7 +13,7 @@ const app = express();
 const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } });
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || 'https://<your-netlify-domain>.netlify.app' }));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'https://theidealcareerprogenerator.netlify.app' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
