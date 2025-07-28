@@ -740,7 +740,7 @@
             if (cvFile) data.append('cv', cvFile);
             if (pdfBlob) data.append('portfolio', pdfBlob, 'portfolio.pdf');
 
-            const response = await fetch('https://portfolio-generator-api.onrender.com/api/generate', {
+            const response = await fetch('https://theidealcareerprogenerator.onrender.com/api/generate', {
               method: 'POST',
               body: data
             });
