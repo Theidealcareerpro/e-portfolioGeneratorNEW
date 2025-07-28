@@ -1,27 +1,71 @@
 <!DOCTYPE html>
-     <html lang="en">
-     <head>
-       <meta charset="UTF-8">
-       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>The Ideal Career Pro Generator</title>
-       <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-       <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-     </head>
-     <body>
-       <div id="root"></div>
-       <div id="error" style="display: none; color: red; text-align: center; padding: 1rem;">
-         <p id="error-text">Something went wrong.</p>
-       </div>
-       <script type="text/javascript">
-         try {
-           const App = () => React.createElement("h1", null, "ePortfolio Generator");
-           const root = ReactDOM.createRoot(document.getElementById('root'));
-           root.render(React.createElement(App, null));
-         } catch (error) {
-           console.error('Error:', error.message, error.stack);
-           document.getElementById('error').style.display = 'block';
-           document.getElementById('error-text').innerText = `Error: ${error.message}`;
-         }
-       </script>
-     </body>
-     </html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ePortfolio Generator - Create ATS-friendly CVs, cover letters, and portfolios to boost your job search.">
+  <meta name="keywords" content="ePortfolio, CV generator, cover letter, portfolio, job search">
+  <meta name="robots" content="index, follow">
+  <title>The Ideal Career Pro Generator - Build Your Professional Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { background: #f3f4f6; font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 1s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  </style>
+</head>
+<body class="antialiased">
+  <header class="bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+      <h1 class="text-3xl font-poppins font-bold">ePortfolio Generator</h1>
+      <nav class="space-x-6">
+        <a href="portfolio.html" class="hover:text-yellow-400 transition">Portfolio</a>
+        <a href="cv.html" class="hover:text-yellow-400 transition">CV</a>
+        <a href="coverletter.html" class="hover:text-yellow-400 transition">Cover Letter</a>
+      </nav>
+    </div>
+  </header>
+  <section class="py-20 bg-gradient-to-b from-blue-100 to-white text-center fade-in">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-4xl sm:text-5xl font-poppins font-bold text-gray-800 mb-4">Build Your Professional ePortfolio</h2>
+      <p class="text-lg text-gray-600 mb-8">Create ATS-friendly CVs, cover letters, and portfolios to stand out in your job search.</p>
+      <div class="flex flex-col sm:flex-row justify-center gap-4">
+        <a href="cv.html" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Create CV</a>
+        <a href="coverletter.html" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition">Create Cover Letter</a>
+        <a href="portfolio.html" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">Create Portfolio</a>
+      </div>
+    </div>
+  </section>
+  <footer class="bg-gray-800 text-white py-8 fade-in">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div>
+          <h3 class="text-lg font-poppins font-semibold mb-4">ePortfolio Generator</h3>
+          <p class="text-gray-400">Build ATS-friendly CVs, cover letters, and portfolios to boost your career.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-poppins font-semibold mb-4">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a href="index.html" class="text-gray-400 hover:text-yellow-400 transition">Home</a></li>
+            <li><a href="portfolio.html" class="text-gray-400 hover:text-yellow-400 transition">Portfolio</a></li>
+            <li><a href="cv.html" class="text-gray-400 hover:text-yellow-400 transition">CV</a></li>
+            <li><a href="coverletter.html" class="text-gray-400 hover:text-yellow-400 transition">Cover Letter</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-poppins font-semibold mb-4">Connect</h3>
+          <ul class="space-y-2">
+            <li><a href="https://github.com/Theidealcareerpro" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-yellow-400 transition">GitHub</a></li>
+            <li><a href="mailto:theidealcareerpro@gmail.com" class="text-gray-400 hover:text-yellow-400 transition">Contact Us</a></li>
+            <li><a href="https://www.buymeacoffee.com/theidealcag" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-yellow-400 transition">Buy Me a Coffee</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-8 text-center text-gray-400">
+        <p>© 2025 ePortfolio Generator. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
