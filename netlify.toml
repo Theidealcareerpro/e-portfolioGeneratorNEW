@@ -44,9 +44,3 @@
   from = "/feedback-success"
   to = "/feedback-success.html"
   status = 200
-
-# Comment out catch-all to return 404 for missing files
-# [[redirects]]
-#   from = "/*"
-#   to = "/index.html"
-#   status = 200
