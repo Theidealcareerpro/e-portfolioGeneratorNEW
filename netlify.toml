@@ -8,7 +8,7 @@
   [headers.values]
     Content-Security-Policy = """
       default-src 'self';
-      script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com;
+      script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com 'sha256-uzhWDFnJYGSAVDNAQpbfq7Jirkt76oa7jk6ea2Uut+c=';
       style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline';
       font-src https://fonts.gstatic.com;
       img-src 'self' data:;
