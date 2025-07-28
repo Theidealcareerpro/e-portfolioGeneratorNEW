@@ -1,20 +1,984 @@
 try {
-  const { createElement } = React;
+  console.log('Loading React...');
+  const { useState, useCallback, useRef } = React;
+  console.log('React loaded successfully');
+  const { jsPDF } = window.jspdf;
+  console.log('jsPDF loaded successfully');
   const { createRoot } = ReactDOM;
+  console.log('ReactDOM loaded successfully');
 
-  const App = () => {
-    return createElement(
-      "div",
-      { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16" },
-      createElement("h1", { className: "text-3xl font-poppins font-bold text-gray-800 mb-8 text-center" }, "Create Your CV"),
-      createElement("p", { className: "text-lg text-gray-600 text-center" }, "Simplified React test page for cv.html")
+  const Header = () => {
+    return React.createElement(
+      "header",
+      { className: "bg-gradient-to-r from-indigo-600 to-blue-500 text-white py-6 sticky top-0 z-50 shadow-lg fade-in", role: "banner" },
+      React.createElement(
+        "div",
+        { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center" },
+        React.createElement("h1", { className: "text-3xl font-poppins font-bold" }, "ePortfolio Generator"),
+        React.createElement(
+          "nav",
+          { className: "space-x-6", role: "navigation" },
+          React.createElement("a", { href: "index.html", className: "hover:text-yellow-400 transition" }, "Home"),
+          React.createElement("a", { href: "portfolio.html", className: "hover:text-yellow-400 transition" }, "Portfolio"),
+          React.createElement("a", { href: "coverletter.html", className: "hover:text-yellow-400 transition" }, "Cover Letter")
+        )
+      )
     );
   };
 
+  const CVPreview = ({ formData }) => {
+    console.log('Rendering CVPreview with formData:', formData);
+    return React.createElement(
+      "div",
+      { className: "preview-container" },
+      React.createElement("h1", null, formData.name || "Your Name"),
+      React.createElement(
+        "div",
+        { className: "contact-info" },
+        React.createElement("span", null, formData.location || "Location"),
+        " | ",
+        React.createElement("span", null, formData.phone || "Phone"),
+        " | ",
+        React.createElement("span", null, formData.email || "Email"),
+        " | ",
+        React.createElement("a", { href: formData.linkedin || "#", target: "_blank", rel: "noopener noreferrer" }, formData.linkedin ? "LinkedIn" : "LinkedIn"),
+        " | ",
+        React.createElement("a", { href: formData.portfolio || "#", target: "_blank", rel: "noopener noreferrer" }, formData.portfolio ? "E-portfolio" : "E-portfolio")
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Professional Summary"),
+        React.createElement("p", null, formData.summary || "Add your professional summary here.")
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Skills and Competence"),
+        React.createElement(
+          "ul",
+          null,
+          formData.skills?.filter(skill => skill).length > 0
+            ? formData.skills.map((skill, index) =>
+                skill && React.createElement("li", { key: index }, skill)
+              )
+            : React.createElement("li", null, "No skills added yet.")
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Education"),
+        React.createElement(
+          "div",
+          null,
+          formData.education?.filter(edu => edu.degree || edu.institution).length > 0
+            ? formData.education.map((edu, index) =>
+                (edu.degree || edu.institution) &&
+                React.createElement(
+                  "div",
+                  { key: index, className: "education" },
+                  React.createElement("h3", null, `${edu.degree || "Degree"} | ${edu.institution || "Institution"} | ${edu.year || "Year"}`),
+                  edu.modules && React.createElement("p", null, React.createElement("strong", null, "Key Modules: "), edu.modules)
+                )
+              )
+            : React.createElement("p", null, "No education entries added yet.")
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Professional Training and Certifications"),
+        React.createElement(
+          "div",
+          null,
+          formData.certifications?.filter(cert => cert.name).length > 0
+            ? formData.certifications.map((cert, index) =>
+                cert.name &&
+                React.createElement(
+                  "div",
+                  { key: index, className: "certification" },
+                  React.createElement("p", null, `${cert.name} | ${cert.year || "N/A"}`)
+                )
+              )
+            : React.createElement("p", null, "No certifications added yet.")
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Professional Experience"),
+        React.createElement(
+          "div",
+          null,
+          formData.experience?.filter(exp => exp.company || exp.period).length > 0
+            ? formData.experience.map((exp, index) =>
+                (exp.company || exp.period) &&
+                React.createElement(
+                  "div",
+                  { key: index, className: "job" },
+                  React.createElement("h3", null, `${exp.company || "Company"} – ${exp.location || "Location"}`),
+                  React.createElement("p", null, exp.period || "Period"),
+                  React.createElement("p", null, React.createElement("strong", null, exp.roles?.filter(role => role).join(" / ") || "Roles")),
+                  exp.description && React.createElement("p", null, exp.description),
+                  exp.achievements?.length > 0 &&
+                    React.createElement(
+                      "div",
+                      { className: "key-achievements" },
+                      React.createElement("strong", null, "Key Achievements:"),
+                      React.createElement(
+                        "ul",
+                        null,
+                        exp.achievements.map((ach, achIndex) => ach && React.createElement("li", { key: achIndex }, ach))
+                      )
+                    )
+                )
+              )
+            : React.createElement("p", null, "No experience entries added yet.")
+        )
+      ),
+      React.createElement(
+        "div",
+        { className: "section" },
+        React.createElement("h2", null, "Professional Project Experience"),
+        React.createElement("p", null, "Please see E-portfolio: ", React.createElement("a", { href: formData.portfolio || "#", target: "_blank", rel: "noopener noreferrer" }, formData.portfolio || "Portfolio"))
+      )
+    );
+  };
+
+  const CVForm = () => {
+    console.log('Initializing CVForm');
+    const [formData, setFormData] = useState({
+      name: '',
+      email: '',
+      location: '',
+      phone: '',
+      linkedin: '',
+      portfolio: '',
+      summary: '',
+      skills: [''],
+      education: [{ degree: '', institution: '', year: '', modules: '' }],
+      certifications: [{ name: '', year: '' }],
+      experience: [{ company: '', location: '', period: '', roles: [''], description: '', achievements: [''] }],
+    });
+    const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const formRef = useRef(null);
+
+    const validateUrl = (url) => {
+      if (!url) return true;
+      const urlRegex = /^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
+      return urlRegex.test(url);
+    };
+
+    const validatePhone = (phone) => {
+      if (!phone) return true;
+      const phoneRegex = /^\+?[1-9]\d{1,14}$|^\d{3}-\d{3}-\d{4}$/;
+      return phoneRegex.test(phone);
+    };
+
+    const validateForm = () => {
+      console.log('Validating form with data:', formData);
+      const newErrors = {};
+      if (!formData.name) newErrors.name = 'Please enter your full name.';
+      if (!formData.email) newErrors.email = 'Please enter your email.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email.';
+      }
+      if (formData.phone && !validatePhone(formData.phone)) {
+        newErrors.phone = 'Please use a valid phone format (e.g., +1234567890 or 123-456-7890).';
+      }
+      if (formData.linkedin && !validateUrl(formData.linkedin)) {
+        newErrors.linkedin = 'Please enter a valid LinkedIn URL.';
+      }
+      if (formData.portfolio && !validateUrl(formData.portfolio)) {
+        newErrors.portfolio = 'Please enter a valid portfolio URL.';
+      }
+      if (!formData.summary) newErrors.summary = 'Please add a professional summary.';
+      if (formData.summary.length > 1000) newErrors.summary = 'Summary is too long (max 1000 characters).';
+      if (!formData.skills.some(skill => skill)) newErrors.skills = 'Please add at least one skill.';
+      if (!formData.education.some(edu => edu.degree && edu.institution)) {
+        newErrors.education = 'Please add at least one education entry.';
+      }
+      formData.education.forEach((edu, index) => {
+        if (edu.modules && edu.modules.length > 500) {
+          newErrors[`education-${index}-modules`] = 'Modules are too long (max 500 characters).';
+        }
+      });
+      if (!formData.experience.some(exp => exp.company && exp.period)) {
+        newErrors.experience = 'Please add at least one experience entry.';
+      }
+      formData.experience.forEach((exp, index) => {
+        if (exp.description && exp.description.length > 500) {
+          newErrors[`experience-${index}-description`] = 'Description is too long (max 500 characters).';
+        }
+      });
+      setErrors(newErrors);
+      console.log('Validation errors:', newErrors);
+      return Object.keys(newErrors).length === 0;
+    };
+
+    const handleInputChange = (e, section, index, field, subIndex = null) => {
+      console.log(`Handling input change: section=${section}, index=${index}, field=${field}, subIndex=${subIndex}`);
+      const value = e.target.value;
+      setFormData((prev) => {
+        if (section === 'skills') {
+          const newSkills = [...prev.skills];
+          newSkills[index] = value;
+          return { ...prev, skills: newSkills };
+        } else if (section === 'education') {
+          const newEducation = [...prev.education];
+          newEducation[index][field] = value;
+          return { ...prev, education: newEducation };
+        } else if (section === 'certifications') {
+          const newCertifications = [...prev.certifications];
+          newCertifications[index][field] = value;
+          return { ...prev, certifications: newCertifications };
+        } else if (section === 'experience') {
+          const newExperience = [...prev.experience];
+          if (field === 'roles' || field === 'achievements') {
+            const newArray = [...newExperience[index][field]];
+            newArray[subIndex] = value;
+            newExperience[index][field] = newArray;
+          } else {
+            newExperience[index][field] = value;
+          }
+          return { ...prev, experience: newExperience };
+        } else {
+          return { ...prev, [e.target.name]: value };
+        }
+      });
+      setErrors({ ...errors, [e.target.name]: '', [`${section}-${index}-${field}`]: '' });
+    };
+
+    const addEntry = (section, defaultEntry) => {
+      console.log(`Adding entry to ${section}`);
+      setFormData((prev) => ({
+        ...prev,
+        [section]: [...prev[section], defaultEntry],
+      }));
+    };
+
+    const removeEntry = (section, index) => {
+      console.log(`Removing entry from ${section} at index ${index}`);
+      setFormData((prev) => ({
+        ...prev,
+        [section]: prev[section].filter((_, i) => i !== index),
+      }));
+    };
+
+    const addSubEntry = (section, index, field, defaultValue) => {
+      console.log(`Adding sub-entry to ${section}[${index}].${field}`);
+      setFormData((prev) => {
+        const newSection = [...prev[section]];
+        newSection[index][field] = [...newSection[index][field], defaultValue];
+        return { ...prev, [section]: newSection };
+      });
+    };
+
+    const removeSubEntry = (section, index, field, subIndex) => {
+      console.log(`Removing sub-entry from ${section}[${index}].${field} at subIndex ${subIndex}`);
+      setFormData((prev) => {
+        const newSection = [...prev[section]];
+        newSection[index][field] = newSection[index][field].filter((_, i) => i !== subIndex);
+        return { ...prev, [section]: newSection };
+      });
+    };
+
+    const generatePDF = () => {
+      console.log('Generating PDF...');
+      try {
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 20;
+        const maxWidth = pageWidth - 2 * margin;
+        let y = margin;
+
+        const checkPageBreak = (additionalHeight) => {
+          if (y + additionalHeight > pageHeight - margin) {
+            doc.addPage();
+            y = margin;
+          }
+        };
+
+        const addText = (text, x, fontSize, style = 'normal', maxWidth = null) => {
+          doc.setFont('helvetica', style);
+          doc.setFontSize(fontSize);
+          const lines = maxWidth ? doc.splitTextToSize(text, maxWidth) : [text];
+          checkPageBreak(lines.length * (fontSize / 2));
+          doc.text(lines, x, y);
+          y += lines.length * (fontSize / 2);
+        };
+
+        addText(formData.name || "Your Name", margin, 24, 'bold', maxWidth);
+        addText(
+          `${formData.location || "Location"} | ${formData.phone || "Phone"} | ${formData.email || "Email"} | ${formData.linkedin || "LinkedIn"} | ${formData.portfolio || "Portfolio"}`,
+          margin,
+          12,
+          'normal',
+          maxWidth
+        );
+        y += 5;
+
+        addText('Professional Summary', margin, 18, 'bold');
+        doc.setLineWidth(0.5);
+        checkPageBreak(2);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        addText(formData.summary || "Add your professional summary here.", margin, 12, 'normal', maxWidth);
+        y += 5;
+
+        addText('Skills and Competence', margin, 18, 'bold');
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        formData.skills.filter(skill => skill).forEach(skill => {
+          checkPageBreak(6);
+          addText(`• ${skill}`, margin + 5, 12, 'normal', maxWidth - 5);
+        });
+        y += 5;
+
+        addText('Education', margin, 18, 'bold');
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        formData.education.filter(edu => edu.degree && edu.institution).forEach(edu => {
+          checkPageBreak(12);
+          addText(`${edu.degree} | ${edu.institution} | ${edu.year || "Year"}`, margin, 12, 'bold', maxWidth);
+          if (edu.modules) {
+            addText(`Key Modules: ${edu.modules}`, margin, 12, 'normal', maxWidth);
+          }
+          y += 2;
+        });
+        y += 5;
+
+        addText('Professional Training and Certifications', margin, 18, 'bold');
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        formData.certifications.filter(cert => cert.name).forEach(cert => {
+          checkPageBreak(6);
+          addText(`${cert.name} | ${cert.year || "N/A"}`, margin, 12, 'normal', maxWidth);
+        });
+        y += 5;
+
+        addText('Professional Experience', margin, 18, 'bold');
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        formData.experience.filter(exp => exp.company && exp.period).forEach(exp => {
+          checkPageBreak(18);
+          addText(`${exp.company} – ${exp.location || "Location"}`, margin, 12, 'bold', maxWidth);
+          addText(exp.period, margin, 12, 'normal', maxWidth);
+          addText(exp.roles.filter(role => role).join(' / '), margin, 12, 'bold', maxWidth);
+          if (exp.description) addText(exp.description, margin, 12, 'normal', maxWidth);
+          if (exp.achievements.filter(ach => ach).length > 0) {
+            addText('Key Achievements:', margin, 12, 'bold', maxWidth);
+            exp.achievements.forEach(ach => {
+              if (ach) {
+                checkPageBreak(6);
+                addText(`• ${ach}`, margin + 5, 12, 'normal', maxWidth - 5);
+              }
+            });
+          }
+          y += 2;
+        });
+        y += 5;
+
+        addText('Professional Project Experience', margin, 18, 'bold');
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 2;
+        addText(`Please see E-portfolio: ${formData.portfolio || "Portfolio"}`, margin, 12, 'normal', maxWidth);
+
+        console.log('PDF generated successfully');
+        return doc.output('blob');
+      } catch (error) {
+        console.error('Error generating PDF:', error.message, error.stack);
+        throw error;
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      console.log('Form submitted');
+      if (!validateForm()) {
+        setMessage('Please fill out all required fields correctly.');
+        formRef.current.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      setIsLoading(true);
+      document.getElementById('loading').classList.add('active');
+      setMessage('Creating and saving your CV...');
+      try {
+        const pdfBlob = generatePDF();
+        const formDataToSend = new FormData();
+        formDataToSend.append('cv', pdfBlob, 'cv.pdf');
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('email', formData.email);
+
+        console.log('Sending API request to https://theidealcareerprogenerator.onrender.com/api/generate-cv');
+        const response = await fetch('https://theidealcareerprogenerator.onrender.com/api/generate-cv', {
+          method: 'POST',
+          body: formDataToSend,
+        });
+        console.log('API response status:', response.status);
+        if (response.ok) {
+          const result = await response.json();
+          console.log('API response:', result);
+          setMessage(`Success! Your CV is saved at: ${result.cv_url}`);
+          setFormData({
+            name: '',
+            email: '',
+            location: '',
+            phone: '',
+            linkedin: '',
+            portfolio: '',
+            summary: '',
+            skills: [''],
+            education: [{ degree: '', institution: '', year: '', modules: '' }],
+            certifications: [{ name: '', year: '' }],
+            experience: [{ company: '', location: '', period: '', roles: [''], description: '', achievements: [''] }],
+          });
+          const doc = new jsPDF();
+          doc.output('blob');
+          doc.save('cv.pdf');
+        } else {
+          const errorData = await response.json();
+          console.error('API error:', errorData);
+          setMessage(`Error: ${errorData.message || 'Failed to save CV. Please try again.'}`);
+        }
+      } catch (error) {
+        console.error('API or PDF error:', error.message, error.stack);
+        setMessage(`Error: Could not connect to the server. Details: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+        document.getElementById('loading').classList.remove('active');
+        setTimeout(() => setMessage(''), 5000);
+      }
+    };
+
+    return React.createElement(
+      "section",
+      { className: "py-16 bg-white fade-in", role: "region", "aria-labelledby": "cv-form-heading" },
+      React.createElement(
+        "div",
+        { className: "max-w-4xl mx-auto px-4 sm:px-6 lg:px-8" },
+        React.createElement("h2", { id: "cv-form-heading", className: "text-3xl font-poppins font-bold text-gray-800 mb-8 text-center" }, "Create Your ATS-Friendly CV"),
+        React.createElement(
+          "form",
+          { ref: formRef, onSubmit: handleSubmit, className: "bg-gray-100 p-6 sm:p-8 rounded-xl shadow-lg", role: "form", "aria-labelledby": "cv-form-title" },
+          React.createElement("h3", { id: "cv-form-title", className: "sr-only" }, "CV Generator Form"),
+          React.createElement(
+            "div",
+            { className: "grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6" },
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "name", className: "block text-sm font-medium text-gray-700" }, "Full Name"),
+              React.createElement("input", {
+                id: "name",
+                type: "text",
+                name: "name",
+                value: formData.name,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                required: true,
+                "aria-required": "true",
+                "aria-invalid": errors.name ? 'true' : 'false',
+                "aria-describedby": errors.name ? 'name-error' : undefined
+              }),
+              errors.name && React.createElement("p", { id: "name-error", className: "text-sm text-red-600 mt-1" }, errors.name)
+            ),
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "email", className: "block text-sm font-medium text-gray-700" }, "Email"),
+              React.createElement("input", {
+                id: "email",
+                type: "email",
+                name: "email",
+                value: formData.email,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                required: true,
+                "aria-required": "true",
+                "aria-invalid": errors.email ? 'true' : 'false',
+                "aria-describedby": errors.email ? 'email-error' : undefined
+              }),
+              errors.email && React.createElement("p", { id: "email-error", className: "text-sm text-red-600 mt-1" }, errors.email)
+            ),
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "location", className: "block text-sm font-medium text-gray-700" }, "Location"),
+              React.createElement("input", {
+                id: "location",
+                type: "text",
+                name: "location",
+                value: formData.location,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50"
+              })
+            ),
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "phone", className: "block text-sm font-medium text-gray-700" }, "Phone (Optional)"),
+              React.createElement("input", {
+                id: "phone",
+                type: "tel",
+                name: "phone",
+                value: formData.phone,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                "aria-invalid": errors.phone ? 'true' : 'false',
+                "aria-describedby": errors.phone ? 'phone-error' : undefined
+              }),
+              errors.phone && React.createElement("p", { id: "phone-error", className: "text-sm text-red-600 mt-1" }, errors.phone)
+            ),
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "linkedin", className: "block text-sm font-medium text-gray-700" }, "LinkedIn URL (Optional)"),
+              React.createElement("input", {
+                id: "linkedin",
+                type: "url",
+                name: "linkedin",
+                value: formData.linkedin,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                placeholder: "https://www.linkedin.com/in/username",
+                "aria-invalid": errors.linkedin ? 'true' : 'false',
+                "aria-describedby": errors.linkedin ? 'linkedin-error' : undefined
+              }),
+              errors.linkedin && React.createElement("p", { id: "linkedin-error", className: "text-sm text-red-600 mt-1" }, errors.linkedin)
+            ),
+            React.createElement(
+              "div",
+              null,
+              React.createElement("label", { htmlFor: "portfolio", className: "block text-sm font-medium text-gray-700" }, "Portfolio URL (Optional)"),
+              React.createElement("input", {
+                id: "portfolio",
+                type: "url",
+                name: "portfolio",
+                value: formData.portfolio,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                placeholder: "https://your-portfolio.com",
+                "aria-invalid": errors.portfolio ? 'true' : 'false',
+                "aria-describedby": errors.portfolio ? 'portfolio-error' : undefined
+              }),
+              errors.portfolio && React.createElement("p", { id: "portfolio-error", className: "text-sm text-red-600 mt-1" }, errors.portfolio)
+            ),
+            React.createElement(
+              "div",
+              { className: "sm:col-span-2" },
+              React.createElement("label", { htmlFor: "summary", className: "block text-sm font-medium text-gray-700" }, "Professional Summary"),
+              React.createElement("textarea", {
+                id: "summary",
+                name: "summary",
+                value: formData.summary,
+                onChange: (e) => handleInputChange(e),
+                className: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                rows: "5",
+                maxLength: "1000",
+                required: true,
+                "aria-required": "true",
+                "aria-invalid": errors.summary ? 'true' : 'false',
+                "aria-describedby": errors.summary ? 'summary-error' : 'summary-desc'
+              }),
+              React.createElement("p", { id: "summary-desc", className: "text-sm text-gray-500 mt-1" }, "Brief overview of your professional background (max 1000 chars)."),
+              errors.summary && React.createElement("p", { id: "summary-error", className: "text-sm text-red-600 mt-1" }, errors.summary)
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement("h3", { className: "text-lg font-medium text-gray-700 mb-2" }, "Skills"),
+            formData.skills.map((skill, index) =>
+              React.createElement(
+                "div",
+                { key: index, className: "flex flex-col sm:flex-row sm:space-x-2 mt-2 gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  value: skill,
+                  onChange: (e) => handleInputChange(e, 'skills', index),
+                  placeholder: `Skill ${index + 1}`,
+                  className: "w-full sm:w-auto flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50",
+                  "aria-label": `Skill ${index + 1}`,
+                  "aria-invalid": errors.skills ? 'true' : 'false',
+                  "aria-describedby": errors.skills ? 'skills-error' : undefined
+                }),
+                formData.skills.length > 1 &&
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => removeEntry('skills', index),
+                      className: "px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:ring focus:ring-red-500",
+                      "aria-label": `Remove skill ${index + 1}`
+                    },
+                    "Remove"
+                  )
+              )
+            ),
+            errors.skills && React.createElement("p", { id: "skills-error", className: "text-sm text-red-600 mt-1" }, errors.skills),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => addEntry('skills', ''),
+                className: "mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700",
+                "aria-label": "Add another skill"
+              },
+              "Add Skill"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement("h3", { className: "text-lg font-medium text-gray-700 mb-3" }, "Education"),
+            formData.education.map((edu, index) =>
+              React.createElement(
+                "div",
+                { key: index, className: "mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg" },
+                React.createElement("input", {
+                  type: "text",
+                  value: edu.degree,
+                  onChange: (e) => handleInputChange(e, 'education', index, 'degree'),
+                  placeholder: "Degree",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-indigo-500",
+                  "aria-label": `Education ${index + 1} degree`,
+                  "aria-invalid": errors.education ? 'true' : 'false',
+                  "aria-describedby": errors.education ? 'education-error' : undefined
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: edu.institution,
+                  onChange: (e) => handleInputChange(e, 'education', index, 'institution'),
+                  placeholder: "Institution",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-indigo-500",
+                  "aria-label": `Education ${index + 1} institution`
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: edu.year,
+                  onChange: (e) => handleInputChange(e, 'education', index, 'year'),
+                  placeholder: "Year (e.g., 2020)",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-indigo-500",
+                  "aria-label": `Education ${index + 1} year`
+                }),
+                React.createElement("textarea", {
+                  value: edu.modules,
+                  onChange: (e) => handleInputChange(e, 'education', index, 'modules'),
+                  placeholder: "Key Courses (Optional)",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-indigo-500",
+                  rows: "3",
+                  maxLength: "500",
+                  "aria-label": `Education ${index + 1} courses`,
+                  "aria-invalid": errors[`education-${index}-modules`] ? 'true' : 'false',
+                  "aria-describedby": errors[`education-${index}-modules`] ? `education-error-${index}-modules` : undefined
+                }),
+                errors[`education-${index}-modules`] &&
+                  React.createElement("p", { id: `education-error-${index}-modules`, className: "text-sm text-red-600 mt-1" }, errors[`education-${index}-modules`]),
+                formData.education.length > 1 &&
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => removeEntry('education', index),
+                      className: "px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 mt-2",
+                      "aria-label": `Remove education entry ${index + 1}`
+                    },
+                    "Remove"
+                  )
+              )
+            ),
+            errors.education && React.createElement("p", { id: "education-error", className: "text-sm text-red-600 mt-1" }, errors.education),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => addEntry('education', { degree: '', institution: '', year: '', modules: '' }),
+                className: "mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700",
+                "aria-label": "Add another education entry"
+              },
+              "Add Education"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement("h3", { className: "text-lg font-semibold text-gray-700 mb-3" }, "Certifications"),
+            formData.certifications.map((cert, index) =>
+              React.createElement(
+                "div",
+                { key: index, className: "flex flex-col sm:flex-row sm:space-x-3 mt-3 gap-2" },
+                React.createElement("input", {
+                  type: "text",
+                  value: cert.name,
+                  onChange: (e) => handleInputChange(e, 'certifications', index, 'name'),
+                  placeholder: "Certification Name",
+                  className: "w-full sm:w-3/4 rounded-md border-gray-300 shadow-sm focus:ring focus:ring-blue-500",
+                  "aria-label": `Certification ${index + 1} name`
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: cert.year,
+                  onChange: (e) => handleInputChange(e, 'certifications', index, 'year'),
+                  placeholder: "Year (e.g., 2023)",
+                  className: "w-full sm:w-1/4 rounded-md border-gray-300 shadow-sm focus:ring focus:ring-blue-500",
+                  "aria-label": `Certification ${index + 1} year`
+                }),
+                formData.certifications.length > 1 &&
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => removeEntry('certifications', index),
+                      className: "px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600",
+                      "aria-label": `Remove certification ${index + 1}`
+                    },
+                    "Remove"
+                  )
+              )
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => addEntry('certifications', { name: '', year: '' }),
+                className: "mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700",
+                "aria-label": "Add another certification"
+              },
+              "Add Certification"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-6" },
+            React.createElement("h3", { className: "text-lg font-semibold text-gray-700 mb-3" }, "Professional Experience"),
+            formData.experience.map((exp, index) =>
+              React.createElement(
+                "div",
+                { key: index, className: "mt-4 p-3 sm:p-4 bg-gray-50 rounded-lg" },
+                React.createElement("input", {
+                  type: "text",
+                  value: exp.company,
+                  onChange: (e) => handleInputChange(e, 'experience', index, 'company'),
+                  placeholder: "Company Name",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-blue-500",
+                  "aria-label": `Experience ${index + 1} company`,
+                  "aria-invalid": errors.experience ? 'true' : 'false',
+                  "aria-describedby": errors.experience ? 'experience-error' : undefined
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: exp.location,
+                  onChange: (e) => handleInputChange(e, 'experience', index, 'location'),
+                  placeholder: "Location",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-blue-500",
+                  "aria-label": `Experience ${index + 1} location`
+                }),
+                React.createElement("input", {
+                  type: "text",
+                  value: exp.period,
+                  onChange: (e) => handleInputChange(e, 'experience', index, 'period'),
+                  placeholder: "Period (e.g., Jan 2020 - Present)",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mb-2 focus:ring focus:ring-blue-500",
+                  "aria-label": `Experience ${index + 1} period`
+                }),
+                React.createElement(
+                  "div",
+                  { className: "mt-2" },
+                  React.createElement("label", { className: "block text-sm font-medium text-gray-700" }, "Roles"),
+                  exp.roles.map((role, roleIndex) =>
+                    React.createElement(
+                      "div",
+                      { key: roleIndex, className: "flex flex-col sm:flex-row sm:space-x-2 mt-2 gap-2" },
+                      React.createElement("input", {
+                        type: "text",
+                        value: role,
+                        onChange: (e) => handleInputChange(e, 'experience', index, 'roles', roleIndex),
+                        placeholder: `Role ${roleIndex + 1}`,
+                        className: "w-full sm:w-auto flex-grow rounded-md border-gray-300 shadow-sm focus:ring-blue-500",
+                        "aria-label": `Experience ${index + 1} role ${roleIndex + 1}`
+                      }),
+                      exp.roles.length > 1 &&
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => removeSubEntry('experience', index, 'roles', roleIndex),
+                            className: "px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600",
+                            "aria-label": `Remove role ${roleIndex + 1}`
+                          },
+                          "Remove"
+                        )
+                    )
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => addSubEntry('experience', index, 'roles', ''),
+                      className: "mt-2 px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600",
+                      "aria-label": "Add another role"
+                    },
+                    "Add Role"
+                  )
+                ),
+                React.createElement("textarea", {
+                  value: exp.description,
+                  onChange: (e) => handleInputChange(e, 'experience', index, 'description'),
+                  placeholder: "Job Description (Optional)",
+                  className: "block w-full rounded-md border-gray-300 shadow-sm mt-2 mb-2 focus:ring-blue-500",
+                  rows: "3",
+                  maxLength: "500",
+                  "aria-label": `Experience ${index + 1} description`,
+                  "aria-invalid": errors[`experience-${index}-description`] ? 'true' : 'false',
+                  "aria-describedby": errors[`experience-${index}-description`] ? `experience-error-${index}-description` : undefined
+                }),
+                errors[`experience-${index}-description`] &&
+                  React.createElement("p", { id: `experience-error-${index}-description`, className: "text-sm text-red-600 mt-1" }, errors[`experience-${index}-description`]),
+                React.createElement(
+                  "div",
+                  { className: "mt-2" },
+                  React.createElement("label", { className: "block text-sm font-medium text-gray-700" }, "Key Achievements"),
+                  exp.achievements.map((ach, achIndex) =>
+                    React.createElement(
+                      "div",
+                      { key: achIndex, className: "flex flex-col sm:flex-row sm:space-x-2 mt-2 gap-2" },
+                      React.createElement("input", {
+                        type: "text",
+                        value: ach,
+                        onChange: (e) => handleInputChange(e, 'experience', index, 'achievements', achIndex),
+                        placeholder: `Achievement ${achIndex + 1}`,
+                        className: "w-full sm:w-auto flex-grow rounded-md border-gray-300 shadow-sm focus:ring-blue-500",
+                        "aria-label": `Experience ${index + 1} achievement ${achIndex + 1}`
+                      }),
+                      exp.achievements.length > 1 &&
+                        React.createElement(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => removeSubEntry('experience', index, 'achievements', achIndex),
+                            className: "px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600",
+                            "aria-label": `Remove achievement ${achIndex + 1}`
+                          },
+                          "Remove"
+                        )
+                    )
+                  ),
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => addSubEntry('experience', index, 'achievements', ''),
+                      className: "mt-2 px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600",
+                      "aria-label": "Add another achievement"
+                    },
+                    "Add Achievement"
+                  )
+                ),
+                formData.experience.length > 1 &&
+                  React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => removeEntry('experience', index),
+                      className: "px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 mt-2",
+                      "aria-label": `Remove experience entry ${index + 1}`
+                    },
+                    "Remove"
+                  )
+              )
+            ),
+            errors.experience && React.createElement("p", { id: "experience-error", className: "text-sm text-red-600 mt-1" }, errors.experience),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => addEntry('experience', { company: '', location: '', period: '', roles: [''], description: '', achievements: [''] }),
+                className: "mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700",
+                "aria-label": "Add another experience entry"
+              },
+              "Add Experience"
+            )
+          ),
+          React.createElement(
+            "div",
+            { className: "mt-8 flex flex-col sm:flex-row gap-4" },
+            React.createElement(
+              "button",
+              {
+                type: "submit",
+                className: `bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed`,
+                disabled: isLoading || Object.keys(errors).length > 0,
+                "aria-label": "Generate and save CV",
+                "aria-disabled": isLoading
+              },
+              isLoading ? 'Saving...' : 'Generate and Save CV'
+            ),
+            React.createElement(
+              "button",
+              {
+                type: "button",
+                onClick: () => {
+                  console.log('Clearing form');
+                  setFormData({
+                    name: '',
+                    email: '',
+                    location: '',
+                    phone: '',
+                    linkedin: '',
+                    portfolio: '',
+                    summary: '',
+                    skills: [''],
+                    education: [{ degree: '', institution: '', year: '', modules: '' }],
+                    certifications: [{ name: '', year: '' }],
+                    experience: [{ company: '', location: '', period: '', roles: [''], description: '', achievements: [''] }],
+                  });
+                  setErrors({});
+                  setMessage('Form cleared successfully!');
+                  setTimeout(() => setMessage(''), 3000);
+                },
+                className: "bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500",
+                "aria-label": "Clear form",
+                disabled: isLoading
+              },
+              "Clear Form"
+            )
+          ),
+          message &&
+            React.createElement(
+              "p",
+              {
+                className: `mt-4 text-center text-sm ${message.includes('Error') || message.includes('Oops') || message.includes('Sorry') ? 'text-red-600' : 'text-green-600'}`,
+                "aria-live": "polite"
+              },
+              message
+            )
+        ),
+        React.createElement(
+          "div",
+          { className: "mt-8" },
+          React.createElement("h3", { className: "text-xl font-semibold text-gray-800 mb-4" }, "CV Preview"),
+          React.createElement(CVPreview, { formData })
+        )
+      )
+    );
+  };
+
+  const App = () => {
+    console.log('Rendering App component');
+    return React.createElement("div", null, React.createElement(Header, null), React.createElement(CVForm, null));
+  };
+
+  console.log('Creating React root');
   const root = createRoot(document.getElementById('root'));
-  root.render(createElement(App));
+  console.log('Rendering App to root');
+  root.render(React.createElement(App));
 } catch (error) {
-  console.error('Error in cv.js:', error.message, error.stack);
+  console.error('Error in full-cv.js:', error.message, error.stack);
   const errorDiv = document.getElementById('error');
   errorDiv.className = 'error-message error';
   document.getElementById('error-text').innerText = `Error: ${error.message} (Check console for details)`;
