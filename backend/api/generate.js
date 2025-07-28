@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const { Octokit } = require('@octokit/rest');
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: process.env.GH_TOKEN });
 
 const validatePortfolio = (req) => {
   const { name, email, profession } = req.body;
@@ -90,8 +90,8 @@ const generatePortfolio = async (req, res) => {
       const path = `portfolios/${portfolioId}/portfolio.pdf`;
       try {
         const response = await octokit.repos.createOrUpdateFileContents({
-          owner: process.env.GITHUB_OWNER,
-          repo: process.env.GITHUB_REPO,
+          owner: process.env.GH_OWNER,
+          repo: process.env.GH_REPO,
           path,
           message: `Portfolio for ${name}`,
           content: Buffer.from(portfolio.data).toString('base64')
