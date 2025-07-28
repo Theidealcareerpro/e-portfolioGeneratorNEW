@@ -13,8 +13,7 @@
       style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline';
       font-src https://fonts.gstatic.com;
       img-src 'self' data:;
-      connect-src 'self' https://theidealcareerprogenerator.onrender.com /.netlify/functions/submit-feedback;
-      form-action 'self' https://theidealcareerprogenerator.onrender.com /.netlify/functions/submit-feedback;
+      connect-src 'self' https://theidealcareerprogenerator.onrender.com https://theidealcareerprogenerator.netlify.app;
     """
     X-Frame-Options = "DENY"
     X-Content-Type-Options = "nosniff"
