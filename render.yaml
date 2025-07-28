@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: portfolio-generator-backend
+    name: theidealcareerproGenerator
     env: node
     plan: free
     rootDir: backend
