@@ -2,14 +2,13 @@
   base = "frontend"
   publish = "."
   command = ""
-  functions = "../functions"
 
 [[headers]]
   for = "/*"
   [headers.values]
     Content-Security-Policy = """
       default-src 'self';
-      script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+      script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com 'sha256-RODCtdmOn6Xt22F1/gyv4+7s1dbZd1UNPir3wtTn4/k=';
       style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com 'unsafe-inline';
       font-src https://fonts.gstatic.com;
       img-src 'self' data:;
@@ -38,9 +37,4 @@
 [[redirects]]
   from = "/coverletter"
   to = "/coverletter.html"
-  status = 200
-
-[[redirects]]
-  from = "/feedback-success"
-  to = "/feedback-success.html"
   status = 200
