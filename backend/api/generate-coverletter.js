@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const { Octokit } = require('@octokit/rest');
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: process.env.GH_TOKEN });
 
 const generateCoverLetter = async (req, res) => {
   try {
@@ -35,8 +35,8 @@ const generateCoverLetter = async (req, res) => {
     const path = `coverletters/${coverLetterId}/coverletter.pdf`;
     try {
       const response = await octokit.repos.createOrUpdateFileContents({
-        owner: process.env.GITHUB_OWNER,
-        repo: process.env.GITHUB_REPO,
+        owner: process.env.GH_OWNER,
+        repo: process.env.GH_REPO,
         path,
         message: `Cover letter for ${name}`,
         content: Buffer.from(coverletter.data).toString('base64')
