@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 const { Octokit } = require('@octokit/rest');
-const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const octokit = new Octokit({ auth: process.env.GH_TOKEN });
 
 const cleanup = async (req, res) => {
   try {
@@ -29,13 +29,13 @@ const cleanup = async (req, res) => {
         const path = `portfolios/${id}/portfolio.pdf`;
         try {
           const { data } = await octokit.repos.getContent({
-            owner: process.env.GITHUB_OWNER,
-            repo: process.env.GITHUB_REPO,
+            owner: process.env.GH_OWNER,
+            repo: process.env.GH_REPO,
             path
           });
           await octokit.repos.deleteFile({
-            owner: process.env.GITHUB_OWNER,
-            repo: process.env.GITHUB_REPO,
+            owner: process.env.GH_OWNER,
+            repo: process.env.GH_REPO,
             path,
             message: `Delete expired portfolio ${id}`,
             sha: data.sha
